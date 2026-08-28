@@ -1,0 +1,46 @@
+{
+  "name": "desktop-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Forge India Connect AI Desk Application",
+  "author": "Forge India Connect",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "electron .",
+    "package:win": "npm run build && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.forgeindia.aiworkforce",
+    "productName": "Forge India Connect AI Desk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      {
+        "from": "../frontend-dashboard/dist",
+        "to": "frontend-dashboard/dist"
+      },
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "electron": "^29.3.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.4.5"
+  }
+}

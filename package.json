@@ -1,0 +1,29 @@
+{
+  "name": "ai-customer-support-saas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise AI-First Customer Support SaaS Platform (AI Workforce Architecture)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"backend,frontend\" -c \"cyan.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix apps/backend-api run dev",
+    "dev:frontend": "npm --prefix apps/frontend-dashboard run dev",
+    "dev:desktop": "npm --prefix apps/desktop-app run build && npm --prefix apps/desktop-app run start",
+    "build:backend": "npm --prefix apps/backend-api run build",
+    "build:frontend": "npm --prefix apps/frontend-dashboard run build",
+    "build:desktop": "npm --prefix apps/desktop-app run build",
+    "package:desktop": "npm --prefix apps/frontend-dashboard run build && npm --prefix apps/desktop-app run package:win",
+    "test:backend": "npm --prefix apps/backend-api run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^7.6.0"
+  }
+}

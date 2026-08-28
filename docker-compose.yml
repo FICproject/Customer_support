@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB Service (Operational DB)
+  mongodb:
+    image: mongo:7.0
+    container_name: ai_customer_support_mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ai_customer_support
+    volumes:
+      - mongo_data:/data/db
+
+  # 2. Redis Service (Cache, Sessions & BullMQ Background Job Queue)
+  redis:
+    image: redis:7.2-alpine
+    container_name: ai_customer_support_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 3. Backend API & AI Workforce Engine Microservice
+  backend-api:
+    build:
+      context: .
+      dockerfile: apps/backend-api/Dockerfile
+    container_name: ai_customer_support_backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/ai_customer_support}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EXOTEL_ACCOUNT_SID=${EXOTEL_ACCOUNT_SID}
+      - EXOTEL_API_KEY=${EXOTEL_API_KEY}
+      - EXOTEL_API_TOKEN=${EXOTEL_API_TOKEN}
+      - EXOTEL_VIRTUAL_NUMBER=${EXOTEL_VIRTUAL_NUMBER}
+      - EXOTEL_SUBDOMAIN=${EXOTEL_SUBDOMAIN}
+    depends_on:
+      - mongodb
+      - redis
+
+  # 4. Frontend Dashboard & Connect App Microservice
+  frontend-dashboard:
+    build:
+      context: .
+      dockerfile: apps/frontend-dashboard/Dockerfile
+    container_name: ai_customer_support_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-api
+
+volumes:
+  mongo_data:
+  redis_data:
