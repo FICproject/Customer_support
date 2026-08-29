@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FORGE_LOGO } from '../logo';
 import {
   CreditCard,
   CheckCircle2,
@@ -3029,7 +3030,7 @@ Authorized By: Forge India Treasury & Payment Settlement System
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <img src="/forge-india-logo.jpg" alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #10b981' }} />
+                <img src={FORGE_LOGO} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #10b981' }} />
                 <div>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                     FORGE INDIA CONNECT PVT. LTD.

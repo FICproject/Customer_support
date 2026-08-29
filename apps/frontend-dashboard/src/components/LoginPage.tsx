@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
+import { FORGE_LOGO } from '../logo';
 import { Bot, Shield, Users, User, HelpCircle, Layers, CreditCard, CheckCircle2, Zap, Eye, EyeOff, Smartphone, Lock, Mail, ArrowRight, Sun, Moon } from 'lucide-react';
 
 interface LoginPageProps {
@@ -117,7 +118,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, onToggleTh
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
               <img
-                src="/forge-india-logo.jpg"
+                src={FORGE_LOGO}
                 alt="FORGE INDIA CONNECT PVT. LTD"
                 style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--accent-secondary)', objectFit: 'cover', background: '#fff', boxShadow: '0 4px 15px rgba(247, 181, 0, 0.3)' }}
               />

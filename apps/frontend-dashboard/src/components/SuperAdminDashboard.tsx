@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { z } from 'zod';
 import { ApiService } from '../services/api';
 import { KPIState, UserRole } from '../types';
+import { FORGE_LOGO } from '../logo';
 import {
   Activity,
   Phone,
@@ -7696,7 +7697,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', zIndex: 1 }}>
             <img
-              src="/forge-india-logo.jpg"
+              src={FORGE_LOGO}
               alt="FORGE INDIA CONNECT"
               style={{
                 width: '58px',

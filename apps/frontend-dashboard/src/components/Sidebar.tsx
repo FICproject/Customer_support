@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserRole } from '../types';
+import { FORGE_LOGO } from '../logo';
 import {
   Bot,
   Shield,
@@ -76,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="sidebar-brand">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <img
-            src="/forge-india-logo.jpg"
+            src={FORGE_LOGO}
             alt="FORGE INDIA CONNECT"
             style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid var(--accent-secondary)', objectFit: 'cover', background: '#fff' }}
           />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
+import { FORGE_LOGO } from '../logo';
 import { TicketVisionButton } from './TicketVisionFlowModal';
 import {
   MessageSquare,
@@ -1162,7 +1163,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       {activeSubTab !== 'CUSTOMER_LOOKUP' && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '10px', borderLeft: '4px solid #ffd700', border: '1px solid var(--border-color)', position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <img src="/forge-india-logo.jpg" alt="FORGE INDIA CONNECT" style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid #ffd700', objectFit: 'cover' }} />
+            <img src={FORGE_LOGO} alt="FORGE INDIA CONNECT" style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid #ffd700', objectFit: 'cover' }} />
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 {getActiveSidebarHeading()}

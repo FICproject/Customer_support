@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ApiService } from '../services/api';
+import { FORGE_LOGO } from '../logo';
 import { Phone, MessageSquare, CreditCard, Send, Smartphone, UserPlus, CheckCircle, Upload, Shield, ArrowRight } from 'lucide-react';
 import { TicketVisionButton } from './TicketVisionFlowModal';
 
@@ -409,7 +410,7 @@ export const ConnectAppPortal: React.FC<ConnectAppProps> = ({ activeSubTab = 'CH
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                 <img
-                  src="/forge-india-logo.jpg"
+                  src={FORGE_LOGO}
                   alt="FORGE INDIA"
                   style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid var(--accent-secondary)', objectFit: 'cover' }}
                 />

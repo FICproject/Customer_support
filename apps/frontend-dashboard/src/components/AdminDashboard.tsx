@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ApiService } from '../services/api';
+import { FORGE_LOGO } from '../logo';
 import { TicketVisionFlowModal, TicketVisionFlowData, TicketVisionButton } from './TicketVisionFlowModal';
 import {
   Ticket as TicketIcon,
@@ -1971,7 +1972,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeSubTab = '
       {(currentTab === 'TICKET_QUEUE' || currentTab === 'OVERVIEW' || currentTab === 'DASHBOARD' || currentTab === 'EXECUTIVE_DASHBOARD') && (
         <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <img src="/forge-india-logo.jpg" alt="FORGE INDIA CONNECT" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid var(--accent-secondary)', objectFit: 'cover', background: '#fff' }} />
+            <img src={FORGE_LOGO} alt="FORGE INDIA CONNECT" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid var(--accent-secondary)', objectFit: 'cover', background: '#fff' }} />
             <div>
               <h1 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-brand)' }}>FORGE INDIA CONNECT PVT. LTD</h1>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '0.2rem 0 0 0' }}>

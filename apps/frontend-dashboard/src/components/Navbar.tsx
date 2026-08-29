@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserRole } from '../types';
+import { FORGE_LOGO } from '../logo';
 import { Bot, Shield, Users, CreditCard, HelpCircle, Eye, Smartphone, Zap, Sun, Moon } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <nav className="navbar">
       <div className="nav-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
         <img
-          src="/forge-india-logo.jpg"
+          src={FORGE_LOGO}
           alt="FORGE INDIA CONNECT"
           style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--accent-secondary)', objectFit: 'cover', background: '#fff' }}
         />
