@@ -28,21 +28,23 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      webSecurity: false
     }
   });
 
   // Define target URL or fallback to production dist
   const isDev = !app.isPackaged;
-  let distPath = path.join(__dirname, '../../frontend-dashboard/dist/index.html');
+  
+  let distPath = path.join(app.getAppPath(), 'frontend-dashboard/dist/index.html');
   if (!fs.existsSync(distPath)) {
-    distPath = path.join(__dirname, '../frontend-dist/index.html');
+    distPath = path.join(__dirname, '../frontend-dashboard/dist/index.html');
   }
   if (!fs.existsSync(distPath)) {
-    distPath = path.join(process.resourcesPath, 'frontend-dist/index.html');
+    distPath = path.join(__dirname, '../../frontend-dashboard/dist/index.html');
   }
   if (!fs.existsSync(distPath)) {
-    distPath = path.join(process.resourcesPath, 'app/frontend-dist/index.html');
+    distPath = path.join(process.resourcesPath, 'app.asar/frontend-dashboard/dist/index.html');
   }
   
   console.log(`[Electron Desktop App] Loading UI (Packaged: ${!isDev}, Path: ${distPath})...`);
@@ -58,9 +60,7 @@ function createWindow() {
     mainWindow.loadURL(targetUrl).then(() => {
       mainWindow?.webContents.openDevTools({ mode: 'detach' });
     }).catch(() => {
-      if (fs.existsSync(distPath)) {
-        mainWindow?.loadFile(distPath).catch(err => console.error('Fallback load error:', err));
-      }
+      mainWindow?.loadFile(distPath).catch(err => console.error('Fallback load error:', err));
     });
   } else {
     // In Packaged EXE mode, load the bundled static production index.html
