@@ -13524,20 +13524,64 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                 })()}
 
                 {/* TL PAYOUT RELEASE CONFIRMATION MODAL */}
-                {tlSelectedPayoutModal && (
-                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999 }}>
-                    <div className="glass-panel" style={{ background: 'var(--bg-surface)', width: '600px', maxWidth: '95%', padding: '1.5rem', borderRadius: '12px', border: '1.5px solid #10b981', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {tlSelectedPayoutModal && typeof document !== 'undefined' && createPortal(
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      background: 'rgba(0, 0, 0, 0.82)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 9999999,
+                      padding: '1.5rem',
+                      boxSizing: 'border-box'
+                    }}
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) setTlSelectedPayoutModal(null);
+                    }}
+                  >
+                    <div
+                      className="glass-panel"
+                      style={{
+                        background: 'var(--bg-surface)',
+                        width: '680px',
+                        maxWidth: '96vw',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        padding: '1.75rem',
+                        borderRadius: '14px',
+                        border: '1.5px solid #10b981',
+                        boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1.1rem'
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.65rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.85rem' }}>
                         <div>
-                          <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                            Payment TL IMPS Disbursal Authorization
+                          <h4 style={{ fontSize: '1.18rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ color: 'var(--text-emerald)' }}>⚡</span> Payment TL IMPS Disbursal Authorization
                           </h4>
-                          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
-                            Release direct IMPS bank payout for {tlSelectedPayoutModal.payoutId} ({tlSelectedPayoutModal.agentName})
+                          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                            Release direct IMPS bank payout for <strong style={{ color: 'var(--text-main)' }}>{tlSelectedPayoutModal.payoutId}</strong> ({tlSelectedPayoutModal.agentName})
                           </p>
                         </div>
-                        <button onClick={() => setTlSelectedPayoutModal(null)} className="btn btn-secondary" style={{ padding: '0.2rem 0.5rem' }}></button>
+                        <button
+                          onClick={() => setTlSelectedPayoutModal(null)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', cursor: 'pointer' }}
+                          title="Close"
+                        >
+                          <X size={16} />
+                        </button>
                       </div>
 
                       {/* Summary Cards */}
@@ -13648,7 +13692,8 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                       </div>
 
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
 
               </div>
