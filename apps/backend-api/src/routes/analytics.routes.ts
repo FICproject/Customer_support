@@ -33,7 +33,31 @@ router.get('/kpis', (req, res) => {
 
 router.get('/audit-logs', (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-  const logs = AuditService.getLogs(limit);
+  const category = (req.query.category as string || '').toUpperCase();
+  const actor = req.query.actor as string;
+  const action = req.query.action as string;
+
+  let logs = AuditService.getLogs(limit);
+
+  if (category === 'COMMUNICATION' || category === 'OMNICHANNEL') {
+    logs = logs.filter(l =>
+      l.action.startsWith('CALL_') ||
+      l.action.startsWith('EMAIL_') ||
+      l.action.startsWith('WHATSAPP_') ||
+      l.action.startsWith('LIVE_CHAT_')
+    );
+  } else if (category === 'TELEPHONY') {
+    logs = logs.filter(l => l.action.startsWith('CALL_'));
+  }
+
+  if (actor) {
+    logs = logs.filter(l => l.actor.toLowerCase().includes(actor.toLowerCase()));
+  }
+
+  if (action) {
+    logs = logs.filter(l => l.action.toLowerCase().includes(action.toLowerCase()));
+  }
+
   res.json({ success: true, count: logs.length, data: logs });
 });
 
@@ -52,6 +76,26 @@ router.get('/reports/csv', (req, res) => {
     csvRows.push('KYC_Record_ID,User_ID,User_Role,Doc_Type,Blur_Score,Forgery_Risk_Score,Government_Verification,AI_Decision,Reasoning');
     Array.from(store.kycRecords.values()).forEach(k => {
       csvRows.push(`"${k.id}","${k.userId}","${k.userRole}","${k.documentType}",${(k.blurScore * 100).toFixed(1)}%,${(k.forgeryRiskScore * 100).toFixed(1)}%,"${k.governmentVerificationStatus}","${k.aiDecision}","${k.aiReasoning.replace(/"/g, '""')}"`);
+    });
+  } else if (type === 'TELEPHONY' || type === 'VOICE_AUDIT') {
+    csvRows.push('Call_SID,Reference_ID,Customer_Name,Customer_Phone,Purpose,Amount,Dialer_Agent,Duration,Status,Sentiment,Confidence_Score,Call_Date');
+    const seen = new Set<string>();
+    for (const c of store.telephonyCallRecords.values()) {
+      if (!seen.has(c.callSid)) {
+        seen.add(c.callSid);
+        csvRows.push(`"${c.callSid}","${c.id}","${(c.customerName || '').replace(/"/g, '""')}","${c.customerPhone || ''}","${(c.purpose || '').replace(/"/g, '""')}","${c.amount || ''}","${c.dialerAgent || ''}","${c.callDuration || ''}","${c.status || ''}","${c.sentiment || c.sentimentLabel || ''}",${c.confidence || 98.4}%,"${c.callDate || ''}"`);
+      }
+    }
+  } else if (type === 'COMMUNICATIONS' || type === 'OMNICHANNEL_AUDIT') {
+    csvRows.push('Timestamp,Actor,Action,Ticket_ID,Reasoning,Validation_Passed');
+    const commLogs = store.auditLogs.filter(l =>
+      l.action.startsWith('CALL_') ||
+      l.action.startsWith('EMAIL_') ||
+      l.action.startsWith('WHATSAPP_') ||
+      l.action.startsWith('LIVE_CHAT_')
+    );
+    commLogs.forEach(l => {
+      csvRows.push(`"${l.timestamp}","${l.actor}","${l.action}","${l.ticketId || ''}","${(l.decisionReasoning || '').replace(/"/g, '""')}",${l.validationPassed}`);
     });
   } else {
     csvRows.push('Ticket_ID,Ticket_Number,User_Name,Role,Department,Priority,Status,Confidence_Score,Escalation_Reason');
@@ -89,6 +133,16 @@ router.get('/reports/pdf', (req, res) => {
     Array.from(store.kycRecords.values()).forEach(k => {
       reportText += `• KYC ID: ${k.id} | Role: ${k.userRole} | Doc: ${k.documentType} | Decision: ${k.aiDecision} | Reason: ${k.aiReasoning}\n`;
     });
+  } else if (type === 'TELEPHONY' || type === 'VOICE_AUDIT') {
+    reportText += `SUMMARY OF AI VOICE OUTBOUND DIALER & REDIAL SESSIONS:\n`;
+    reportText += `-----------------------------------------------------------------\n`;
+    const seen = new Set<string>();
+    for (const c of store.telephonyCallRecords.values()) {
+      if (!seen.has(c.callSid)) {
+        seen.add(c.callSid);
+        reportText += `• Call SID: ${c.callSid} | Ref: ${c.id} | Customer: ${c.customerName} (${c.customerPhone}) | Amount: ${c.amount} | Duration: ${c.callDuration} | Status: ${c.status} | Sentiment: ${c.sentiment || c.sentimentLabel}\n`;
+      }
+    }
   } else {
     reportText += `SUMMARY OF SUPPORT TICKETS & SLA PERFORMANCE:\n`;
     reportText += `-----------------------------------------------------------------\n`;

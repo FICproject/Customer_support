@@ -45,6 +45,7 @@ class InMemoryStore {
   public agentStates: Map<AIAgentType, AIAgentState> = new Map();
   public aiWorkforceRegistry: Map<string, AIWorkforceAgentNode> = new Map();
   public aiOrchestratorAgents: Map<string, any> = new Map();
+  public telephonyCallRecords: Map<string, any> = new Map();
   public paymentSettings: {
     slaWindowMinutes: number;
     voiceDialerMaxRetries: number;
@@ -73,6 +74,7 @@ class InMemoryStore {
     this.seedAIWorkforceRegistry();
     this.seedInitialTicketsAndOps();
     this.seedAuditLogs();
+    this.seedTelephonyCallRecords();
   }
 
   private seedUsers() {
@@ -219,10 +221,10 @@ class InMemoryStore {
     const docs: KnowledgeDocument[] = [
       {
         id: 'kb-101',
-        title: 'Enterprise Refund & Cancellation Policy',
-        category: 'REFUNDS',
-        content: 'Customers can request a 100% refund within 14 days of purchase if service availability is under 99.5%. Pro-rata refund applies thereafter. AI Query Agent can approve instant refund for orders under $5,000.',
-        tags: ['refund', 'cancellation', 'policy', 'money-back'],
+        title: 'Enterprise Strict No-Refund & Final Settlement Terms',
+        category: 'POLICIES',
+        content: 'FORGE INDIA enforces a strict No-Refund policy. All customer, vendor, and agent onboarding registration fees, service subscriptions, and license deposits are strictly non-refundable and final once processed through our payment gateway. Disputes or inquiries are handled via billing reconciliation and support review.',
+        tags: ['no-refund', 'cancellation', 'policy', 'terms', 'final-settlement'],
         usageCount: 142,
         helpfulnessScore: 4.9,
         updatedAt: new Date().toISOString()
@@ -346,15 +348,14 @@ class InMemoryStore {
         active: true
       },
       {
-        id: 'wf-refund-process',
-        name: 'Customer Refund Policy & Automated Processing Engine',
-        description: 'Audits customer refund requests against 30-day return policy, auto-issues refunds <= $200 or escalates larger refunds to Finance TL.',
+        id: 'wf-billing-dispute',
+        name: 'Billing Discrepancy & Account Settlement Audit Engine',
+        description: 'Audits transaction disputes, enforces the platform strict No-Refund policy, verifies gateway UTR settlement logs, and routes unresolved inquiries to Payment TL.',
         steps: [
-          { stepNumber: 1, stepName: 'AI Query Agent: Refund Request Audit', assignedAgent: AIAgentType.QUERY, action: 'AUDIT_REFUND' },
-          { stepNumber: 2, stepName: 'Timer: Refund Grace Period Hold', assignedAgent: AIAgentType.QUERY, action: 'GRACE_PERIOD' },
-          { stepNumber: 3, stepName: 'Condition: Refund Amount <= $200 Policy', assignedAgent: AIAgentType.PAYMENT, action: 'POLICY_CHECK' },
-          { stepNumber: 4, stepName: 'Human Approval: Finance TL Refund Clearance', assignedAgent: AIAgentType.PAYMENT, action: 'FINANCE_TL_CLEARANCE' },
-          { stepNumber: 5, stepName: 'Stripe Gateway Refund & Credit Dispatch', assignedAgent: AIAgentType.PAYMENT, action: 'EXECUTE_REFUND' }
+          { stepNumber: 1, stepName: 'AI Query Agent: Policy Verification & Audit', assignedAgent: AIAgentType.QUERY, action: 'AUDIT_POLICY' },
+          { stepNumber: 2, stepName: 'AI Payment Agent: Banking Ledger UTR Match', assignedAgent: AIAgentType.PAYMENT, action: 'LEDGER_VERIFICATION' },
+          { stepNumber: 3, stepName: 'Enforce No-Refund Policy & Log Resolution', assignedAgent: AIAgentType.PAYMENT, action: 'POLICY_ENFORCEMENT' },
+          { stepNumber: 4, stepName: 'Human Review: Payment TL Settlement Audit', assignedAgent: AIAgentType.PAYMENT, action: 'FINANCE_TL_CLEARANCE' }
         ],
         active: true
       },
@@ -710,7 +711,7 @@ class InMemoryStore {
         modelConfig: { provider: 'GEMINI', model: 'gemini-1.5-flash', temperature: 0.0, maxTokens: 1024, timeoutMs: 15000, fallbackModel: 'gpt-4o-mini' },
         version: '1.0.0',
         promptVersion: 'Payment Coordinator Prompt v1',
-        knowledgeBaseScope: ['Payment & Refund Policies', 'Commission Rules'],
+        knowledgeBaseScope: ['Payment Settlement Policies', 'Commission Rules'],
         tools: ['PaymentWorkflowRouterTool', 'CommissionManagerTool'],
         permissions: ['PAYMENT_READ', 'PAYMENT_DISPATCH', 'COMMISSION_READ'],
         maxConcurrentTasks: 40,
@@ -1707,7 +1708,7 @@ class InMemoryStore {
         relatedEntity: 'Ticket (tck-1001)',
         beforeValue: { department: 'UNASSIGNED', priority: 'NONE' },
         afterValue: { department: 'QUERY', priority: 'HIGH' },
-        reason: 'Auto-routed based on keyword match for technician delay and refund warning.',
+        reason: 'Auto-routed based on keyword match for technician delay and SLA escalation warning.',
         validationPassed: true,
         inputPayload: { ticketId: 'tck-1001', message: 'I paid for on-site onboarding 3 days ago. No technician has arrived yet.' },
         outputResult: { department: 'QUERY', priority: 'HIGH' },
@@ -1809,6 +1810,100 @@ class InMemoryStore {
 
     depts.forEach(dept => {
       this.departments.set(dept.id, dept);
+    });
+  }
+
+  private seedTelephonyCallRecords() {
+    const records = [
+      {
+        callSid: 'CA-992014881',
+        id: 'REG-8822',
+        customerName: 'David Miller',
+        customerPhone: '+1 (555) 234-8899',
+        purpose: 'Customer Registration Onboarding Fee',
+        amount: '$99.00',
+        callDurationSecs: 42,
+        callDuration: '42s',
+        callDate: new Date(Date.now() - 3600000 * 2).toISOString(),
+        dialerAgent: 'AI-VOICE-004 (Twilio PSTN Gateway)',
+        status: 'CALL_ANSWERED',
+        sentimentScore: 0.92,
+        sentimentLabel: 'POSITIVE (Cooperative)',
+        callOutcome: 'Fresh WhatsApp Payment Link Delivered (30m Active)',
+        confidence: 98.4,
+        supervisorAudited: true,
+        auditSupervisor: 'Sarah Connor (QUERIES_TL)',
+        recordingUrl: '/api/v1/telephony/recordings/REG-8822',
+        waveform: [15, 28, 45, 62, 80, 55, 30, 70, 92, 85, 40, 20, 60, 88, 75, 50, 65, 90, 82, 35, 25, 48, 70, 85, 60, 40, 78, 95, 68, 52, 35, 60, 80, 45, 20],
+        transcript: [
+          { speaker: 'AI', time: '00:02', text: 'Hello David Miller, this is FORGE INDIA automated payment desk. We noticed your onboarding fee of $99.00 is pending.' },
+          { speaker: 'CUSTOMER', time: '00:11', text: 'Hello! Yes, my card OTP was delayed earlier on the payment gateway.' },
+          { speaker: 'AI', time: '00:20', text: 'No problem at all! I have generated and sent a fresh 30-minute dynamic checkout link directly to your WhatsApp and SMS.' },
+          { speaker: 'CUSTOMER', time: '00:32', text: 'Got the WhatsApp ping just now with the link. Opening it right away.' },
+          { speaker: 'AI', time: '00:38', text: 'Excellent. Our gateway will instantly credit your account upon settlement. Have a great day!' }
+        ]
+      },
+      {
+        callSid: 'CA-992014882',
+        id: 'REG-8830',
+        customerName: 'Karthik Raja',
+        customerPhone: '+91 98450 11234',
+        purpose: 'Merchant Partner Terminal Activation',
+        amount: '$600.00',
+        callDurationSecs: 75,
+        callDuration: '1m 15s',
+        callDate: new Date(Date.now() - 3600000 * 4).toISOString(),
+        dialerAgent: 'AI-VOICE-002 (Twilio PSTN Gateway)',
+        status: 'CALL_ANSWERED',
+        sentimentScore: 0.74,
+        sentimentLabel: 'NEUTRAL (Escalated after Timeout)',
+        callOutcome: 'Escalated to Payment TL & Officer Suresh Reddy',
+        confidence: 96.1,
+        supervisorAudited: true,
+        auditSupervisor: 'Marcus Brody (PAYMENT_TL)',
+        recordingUrl: '/api/v1/telephony/recordings/REG-8830',
+        waveform: [30, 45, 70, 85, 95, 60, 40, 80, 90, 75, 60, 35, 75, 88, 65, 40, 55, 82, 90, 45, 30, 50, 75, 90, 65, 45, 80, 98, 70, 55, 40, 65, 85, 50, 25],
+        transcript: [
+          { speaker: 'AI', time: '00:03', text: 'Namaste Karthik Raja. Calling from FORGE INDIA merchant desk regarding terminal onboarding fee of ₹600.' },
+          { speaker: 'CUSTOMER', time: '00:14', text: 'Both previous links you sent expired before my finance person could scan the QR code.' },
+          { speaker: 'AI', time: '00:27', text: 'We apologize for the inconvenience. Because this link expired twice, I am immediately routing your case to Officer Suresh Reddy.' },
+          { speaker: 'CUSTOMER', time: '00:45', text: 'Yes, please have someone guide us on direct IMPS transfer or extend the link validity.' },
+          { speaker: 'AI', time: '01:05', text: 'Officer Suresh Reddy has been alerted on his live desk and will initiate a priority assist call with a dedicated QR code.' }
+        ]
+      },
+      {
+        callSid: 'CA-992014883',
+        id: 'REG-8823',
+        customerName: 'Robert Sterling',
+        customerPhone: '+1 (555) 345-9922',
+        purpose: 'Tier 1 Agent Partner Network License',
+        amount: '$150.00',
+        callDurationSecs: 38,
+        callDuration: '38s',
+        callDate: new Date(Date.now() - 3600000 * 6).toISOString(),
+        dialerAgent: 'AI-VOICE-004 (Twilio PSTN Gateway)',
+        status: 'CALL_ANSWERED',
+        sentimentScore: 0.95,
+        sentimentLabel: 'POSITIVE (Receipt Confirmed)',
+        callOutcome: 'Bank Wire Receipt UTR #PUNB029104 Ingested',
+        confidence: 99.2,
+        supervisorAudited: true,
+        auditSupervisor: 'Sarah Connor (QUERIES_TL)',
+        recordingUrl: '/api/v1/telephony/recordings/REG-8823',
+        waveform: [20, 35, 55, 70, 85, 65, 40, 75, 90, 70, 50, 30, 60, 85, 60, 45, 65, 80, 75, 40, 25, 50, 70, 85, 60, 40, 75, 90, 65, 45, 30, 60, 75, 45, 25],
+        transcript: [
+          { speaker: 'AI', time: '00:02', text: 'Hello Robert Sterling, calling from FORGE INDIA agent partnerships desk regarding your Tier 1 license fee.' },
+          { speaker: 'CUSTOMER', time: '00:12', text: 'Hi! I already initiated the NEFT transfer from Punjab National Bank about 15 minutes ago.' },
+          { speaker: 'AI', time: '00:22', text: 'Thank you! Could you please share the UTR reference number so our automated engine can match it?' },
+          { speaker: 'CUSTOMER', time: '00:30', text: 'Sure, the UTR number is PUNB0291048822.' },
+          { speaker: 'AI', time: '00:35', text: 'Got it! UTR matched with 100% confidence. Your agent credentials will be unlocked shortly.' }
+        ]
+      }
+    ];
+
+    records.forEach(rec => {
+      this.telephonyCallRecords.set(rec.callSid, rec);
+      this.telephonyCallRecords.set(rec.id, rec);
     });
   }
 }

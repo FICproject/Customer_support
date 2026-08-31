@@ -1017,7 +1017,7 @@ Authorized By: Forge India Treasury & Payment Settlement System
       phone: '+91-98765-43210',
       accountType: 'Vendor Partner • Referral by AGT-PIN-600001',
       amount: '₹600.00',
-      category: 'Agent Onboarding Fee Refund Policy Terms',
+      category: 'Agent Onboarding Fee & Non-Refundable Policy Terms',
       channel: 'CHAT_WEB',
       aiAgent: 'Payment AI (Gemini 1.5 Pro)',
       aiConfidence: 99.4,
@@ -1025,11 +1025,11 @@ Authorized By: Forge India Treasury & Payment Settlement System
       status: 'LIVE_AI', // 'LIVE_AI' | 'HUMAN_INTERCEPTED' | 'RESOLVED'
       duration: '1m 24s',
       slaCountdown: '12m remaining',
-      preview: 'If your KYC is not approved, 100% of your onboarding fee will be refunded.',
+      preview: 'Platform Policy: Registration fees are final and non-refundable once processed.',
       chatHistory: [
-        { sender: 'CUSTOMER', text: 'Hello, I wanted to know the refund terms if my agent registration is rejected.' },
-        { sender: 'AI', text: 'Hello Sophia! If your agent KYC verification is not approved, your onboarding fee is 100% refunded to the original payment source within 3-5 business days.' },
-        { sender: 'CUSTOMER', text: 'What if I cancel it manually after 2 days?' }
+        { sender: 'CUSTOMER', text: 'Hello, I wanted to know the fee terms if my agent registration has a dispute.' },
+        { sender: 'AI', text: 'Hello Sophia! Registration fees are non-refundable per platform terms. Our support team can assist with document re-upload or credential migration.' },
+        { sender: 'CUSTOMER', text: 'Understood, thank you for clarifying the policy.' }
       ]
     },
     {
@@ -1359,19 +1359,19 @@ Authorized By: Forge India Treasury & Payment Settlement System
                       </td>
                       <td><strong style={{ color: 'var(--text-emerald)', fontSize: '0.85rem' }}>{item.paymentAmount}</strong></td>
                       <td>
-                        <span className="badge" style={{
-                          fontSize: '0.65rem',
-                          background: item.paymentStatus === 'PAYMENT_COMPLETED' ? '#dcfce7' : item.paymentStatus === 'FAILED_PAYMENT' ? '#fee2e2' : item.paymentStatus === 'PAYMENT_VERIFICATION' ? '#e0f2fe' : '#fef3c7',
-                          color: item.paymentStatus === 'PAYMENT_COMPLETED' ? '#166534' : item.paymentStatus === 'FAILED_PAYMENT' ? '#991b1b' : item.paymentStatus === 'PAYMENT_VERIFICATION' ? '#075985' : '#92400e',
-                          border: `1px solid ${item.paymentStatus === 'PAYMENT_COMPLETED' ? '#86efac' : item.paymentStatus === 'FAILED_PAYMENT' ? '#fca5a5' : item.paymentStatus === 'PAYMENT_VERIFICATION' ? '#7dd3fc' : '#fde68a'}`,
-                          fontWeight: 700
-                        }}>
-                          {item.paymentStatus}
+                        <span className={`badge ${item.paymentStatus === 'PAYMENT_COMPLETED' ? 'badge-success' : item.paymentStatus === 'FAILED_PAYMENT' ? 'badge-danger' : 'badge-warning'}`} style={{ borderRadius: '9999px', border: 'none', padding: '0.22rem 0.65rem' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+                          {item.paymentStatus.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td style={{ fontSize: '0.72rem' }}>{item.paymentMethod}</td>
                       <td style={{ fontSize: '0.72rem', color: 'var(--text-brand)' }}>{item.aiStatus}</td>
-                      <td><span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>{item.reminderCount} CALL(S) MADE</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <PhoneCall size={12} style={{ color: 'var(--text-muted)' }} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)' }}>{item.reminderCount} Call(s) Made</span>
+                        </div>
+                      </td>
                       <td style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.currentWorkflow}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
@@ -2060,12 +2060,12 @@ Authorized By: Forge India Treasury & Payment Settlement System
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{agent.jurisdiction}</div>
                         </td>
                         <td>
-                          <span className={`badge ${isPincode ? 'badge-primary' : isDistrict ? 'badge-info' : isDivisional ? 'badge-success' : 'badge-primary'}`} style={{ fontSize: '0.62rem', background: isState ? '#a855f7' : undefined }}>
+                          <span className="badge badge-secondary" style={{ fontSize: '0.62rem', fontWeight: 600 }}>
                             {agent.tierLabel}
                           </span>
                         </td>
                         <td>
-                          <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 800, color: isPincode ? 'var(--text-cyan)' : '#38bdf8' }}>
+                          <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-main)' }}>
                             ₹{agent.commissionPerReferral.toFixed(2)} / vendor
                           </span>
                         </td>
@@ -2074,27 +2074,23 @@ Authorized By: Forge India Treasury & Payment Settlement System
                           <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block' }}>Vendors Onboarded</span>
                         </td>
                         <td>
-                          <div style={{ background: 'var(--bg-dark)', padding: '0.35rem 0.55rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontFamily: 'monospace' }}>
-                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{agent.calculationFormula}</span>
-                            <strong style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-emerald)', marginTop: '0.1rem' }}>
-                              = ₹{agent.lifetimeCommissionEarned.toFixed(2)}
-                            </strong>
-                          </div>
+                          <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: 'var(--text-muted)' }}>{agent.calculationFormula}</div>
+                          <strong style={{ display: 'block', fontSize: '0.84rem', color: 'var(--text-main)', marginTop: '0.15rem' }}>
+                            = ₹{agent.lifetimeCommissionEarned.toFixed(2)}
+                          </strong>
                         </td>
                         <td>
-                          <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.35rem 0.55rem', borderRadius: '6px', border: '1px solid #10b981' }}>
-                            <span style={{ fontSize: '0.58rem', color: 'var(--text-emerald)', fontWeight: 800 }}>LIVE WALLET</span>
-                            <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--text-emerald)' }}>
-                              ₹{agent.currentWalletBalance.toFixed(2)}
-                            </strong>
-                          </div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>LIVE WALLET</div>
+                          <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--text-main)', marginTop: '0.1rem' }}>
+                            ₹{agent.currentWalletBalance.toFixed(2)}
+                          </strong>
                         </td>
                         <td>
                           {req ? (
                             <div>
                               <strong style={{ fontSize: '0.8rem', color: 'var(--text-brand)' }}>Req: ₹{req.requestedAmount.toFixed(2)}</strong>
                               <div style={{ fontSize: '0.62rem', color: 'var(--text-rose)' }}>TDS 5%: -₹{req.tdsDeduction.toFixed(2)}</div>
-                              <strong style={{ fontSize: '0.8rem', color: 'var(--text-emerald)', display: 'block' }}>Net: ₹{req.netPayable.toFixed(2)}</strong>
+                              <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)', display: 'block' }}>Net: ₹{req.netPayable.toFixed(2)}</strong>
                             </div>
                           ) : (
                             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>No Active Request</span>
@@ -2102,14 +2098,14 @@ Authorized By: Forge India Treasury & Payment Settlement System
                         </td>
                         <td>
                           {req ? (
-                            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid #a855f7' }}>
-                              <span style={{ fontSize: '0.58rem', color: '#c084fc', fontWeight: 800 }}>REMAINING</span>
-                              <strong style={{ display: 'block', fontSize: '0.85rem', color: '#c084fc' }}>
+                            <div>
+                              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>REMAINING</div>
+                              <strong style={{ display: 'block', fontSize: '0.88rem', color: 'var(--text-main)', marginTop: '0.1rem' }}>
                                 ₹{req.balanceAfterPayout.toFixed(2)}
                               </strong>
                             </div>
                           ) : (
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-emerald)' }}>₹{agent.currentWalletBalance.toFixed(2)}</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-main)' }}>₹{agent.currentWalletBalance.toFixed(2)}</span>
                           )}
                         </td>
                         <td>

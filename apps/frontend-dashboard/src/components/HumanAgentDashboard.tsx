@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { KycHumanOfficerWorkspace } from './KycHumanOfficerWorkspace';
 import { PaymentHumanOfficerWorkspace } from './PaymentHumanOfficerWorkspace';
+import { OmnichannelDeskSuite, getChannelForTicket } from './OmnichannelDeskSuite';
 
 interface HumanAgentDashboardProps {
   role: UserRole.QUERY_AGENT | UserRole.KYC_AGENT | UserRole.PAYMENT_AGENT;
@@ -62,7 +63,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       accountType: 'Vendor Partner • Referral by AGT-INDIA-101',
       membershipLevel: 'GOLD TIER',
       channel: 'CHAT_WEB',
-      category: 'Agent Onboarding Fee Refund Policy',
+      category: 'Agent Onboarding Fee & Non-Refundable Policy Terms',
       aiAgent: 'Query AI (Gemini 1.5 Pro)',
       aiStatus: 'AI Monitoring Context...',
       aiConfidence: 99.4,
@@ -70,15 +71,15 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       status: 'LIVE_AI', // 'LIVE_AI' | 'HUMAN_INTERCEPTED' | 'CLOSED_BY_AI' | 'REOPENED_BY_HUMAN'
       duration: '1m 24s',
       slaCountdown: '12m remaining',
-      aiReasoning: 'Vector match #KB-881 (Refund policies). Verifying KYC status before advising refund timeline.',
+      aiReasoning: 'Vector match #KB-881 (Non-Refundable Policy & Terms). Verifying KYC status before advising resolution.',
       suggestedReplies: [
-        'If your KYC is not approved, 100% of your onboarding fee will be refunded within 3-5 business days.',
-        'Would you like me to connect you with our accounts team to expedite your fee status?'
+        'Platform Policy: Registration fees are final and non-refundable once submitted.',
+        'Would you like me to connect you with our accounts team to review your document status?'
       ],
       chatHistory: [
-        { sender: 'CUSTOMER', text: 'Hello, I wanted to know the refund terms if my agent registration is rejected.' },
-        { sender: 'AI', text: 'Hello Sophia! If your agent KYC verification is not approved, your onboarding fee is 100% refunded to the original payment source within 3-5 business days.' },
-        { sender: 'CUSTOMER', text: 'What if I cancel it manually after 2 days?' }
+        { sender: 'CUSTOMER', text: 'Hello, I wanted to know the fee terms if my agent registration has a dispute.' },
+        { sender: 'AI', text: 'Hello Sophia! Registration fees are non-refundable per platform terms. Our support team can assist with document re-upload or credential migration.' },
+        { sender: 'CUSTOMER', text: 'Understood, thank you for clarifying the policy.' }
       ],
       internalWhisperNotes: [
         { author: 'Sarah Jenkins (TL)', note: 'Customer called earlier regarding registration receipt. Handled smoothly.', time: '10:05 AM' }
@@ -354,7 +355,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         customerName: 'David Miller',
         category: 'Document Re-upload Delay (PSTN Call)',
         sender: 'Sarah Connor (Query Team Lead)',
-        message: 'Hi Alex, please check the high priority queue for urgent VIP escalations on refund policy inquiries.',
+        message: 'Hi Alex, please check the high priority queue for urgent VIP escalations on billing dispute inquiries.',
         timestamp: 'Just Now',
         read: false
       },
@@ -362,9 +363,9 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         id: 'PING-990',
         ticketId: 'TCK-8821',
         customerName: 'Sophia Chen',
-        category: 'Agent Onboarding Fee Refund Policy',
+        category: 'Agent Onboarding Fee & Non-Refundable Terms',
         sender: 'Sarah Connor (Query Team Lead)',
-        message: 'Alex, Sophia Chen is asking about KYC cancellation refund timelines. Please take over if needed.',
+        message: 'Alex, Sophia Chen is asking about KYC onboarding fee terms. Please take over if needed.',
         timestamp: '12 mins ago',
         read: true
       },
@@ -459,7 +460,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         paymentStatus: 'PAID (Razorpay / UPI Gateway)',
         paymentRef: 'UPI-TXN-8829104829',
         fulfillmentStatus: 'ACTIVE & PROVISIONED',
-        refundStatus: 'ELIGIBLE (Within 7-Day Window)',
+        disputeStatus: 'RESOLVED (Non-Refundable Policy Applied)',
         shippingAddress: '42, Brigade Road, Ashok Nagar, Bengaluru, Karnataka, 560025, India',
         billingAddress: 'Same as Shipping Address (GSTIN: 29AABCU9603R1ZM)',
         trackingNumber: 'BLUEDART-8829104',
@@ -504,7 +505,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         { id: 'ORD-7749102', item: 'Annual Partner Compliance Renewal', date: '10 Jan 2025', amount: '$250.00', status: 'COMPLETED' }
       ],
       associatedTickets: [
-        { id: 'TCK-8821', subject: 'Agent Onboarding Fee Refund Inquiry', status: 'LIVE_AI', priority: 'HIGH', date: 'Today, 10:14 AM' },
+        { id: 'TCK-8821', subject: 'Agent Onboarding Fee & Non-Refundable Policy Inquiry', status: 'LIVE_AI', priority: 'HIGH', date: 'Today, 10:14 AM' },
         { id: 'TCK-7719', subject: 'Referral Commission Payout Verification', status: 'RESOLVED', priority: 'MEDIUM', date: '15 Aug 2026' }
       ]
     },
@@ -535,7 +536,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         paymentStatus: 'PAID (Stripe / International Card)',
         paymentRef: 'ch_3N8x8291048bf',
         fulfillmentStatus: 'PENDING KYC APPROVAL',
-        refundStatus: 'INELIGIBLE (Active SLA Contract)',
+        disputeStatus: 'INELIGIBLE (Active SLA Contract • Non-Refundable)',
         shippingAddress: '742 Evergreen Terrace, Springfield, OR 97477, United States',
         billingAddress: 'Global Ventures HQ, 100 Financial Way, New York, NY 10005',
         trackingNumber: 'FEDEX-9920148',
@@ -606,7 +607,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         paymentStatus: 'PAID (NetBanking HDFC)',
         paymentRef: 'HDFC-88291004',
         fulfillmentStatus: 'COMPLETED',
-        refundStatus: 'PROCESSED',
+        settlementStatus: 'SETTLED',
         shippingAddress: 'Suite 102, Cyber City, Gurugram, Haryana, 122002, India',
         billingAddress: 'Same as Shipping Address',
         trackingNumber: 'DELHIVERY-55391',
@@ -674,7 +675,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       phone: '+91-98765-43210',
       name: 'Sophia Chen',
       channel: 'WHATSAPP',
-      message: 'Hello Sophia! 100% of onboarding fee will be refunded to your original payment account within 3-5 business days.',
+      message: 'Hello Sophia! Registration fee terms confirmed: fees are non-refundable and your agent portal access is activated.',
       status: 'DELIVERED',
       timestamp: 'Today, 10:14 AM'
     },
@@ -683,7 +684,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       phone: '+91-98765-43210',
       name: 'Sophia Chen',
       channel: 'WHATSAPP',
-      message: 'Refund transaction reference #REF-9920148 has been initiated with our banking gateway.',
+      message: 'Official Tax Invoice reference #INV-2026-9920148 has been generated with GST input tax credit.',
       status: 'DELIVERED',
       timestamp: 'Today, 10:25 AM'
     },
@@ -692,7 +693,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       phone: '+91-98765-43210',
       name: 'Sophia Chen',
       channel: 'SMS',
-      message: 'Your registration refund of $500.00 is complete. Thank you for your patience.',
+      message: 'Your registration fee receipt of $500.00 is confirmed. Thank you for your partnership.',
       status: 'SENT_TWILIO',
       timestamp: 'Today, 10:45 AM'
     },
@@ -727,18 +728,18 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         customerPhone: '+91-98765-43210',
         accountType: 'Vendor Partner • Referral by AGT-INDIA-101',
         membershipLevel: 'GOLD TIER',
-        category: 'Agent Onboarding Fee Refund Policy',
+        category: 'Agent Onboarding Fee & Non-Refundable Policy',
         status: 'LIVE_AI',
         aiAgent: 'Query AI (Gemini 1.5 Pro)',
         aiConfidence: 99.4,
         sentiment: 'NEUTRAL',
         duration: '1m 24s',
         slaCountdown: '12m remaining',
-        preview: 'What if I cancel it manually after 2 days?',
+        preview: 'Understood, thank you for clarifying the policy.',
         chatHistory: [
-          { sender: 'CUSTOMER', text: 'Hello, I wanted to know the refund terms if my agent registration is rejected.' },
-          { sender: 'AI', text: 'Hello Sophia! If your agent KYC verification is not approved, your onboarding fee is 100% refunded to the original payment source within 3-5 business days.' },
-          { sender: 'CUSTOMER', text: 'What if I cancel it manually after 2 days?' }
+          { sender: 'CUSTOMER', text: 'Hello, I wanted to know the fee terms if my agent registration has a dispute.' },
+          { sender: 'AI', text: 'Hello Sophia! Registration fees are non-refundable per platform terms. Our support team can assist with document re-upload or credential migration.' },
+          { sender: 'CUSTOMER', text: 'Understood, thank you for clarifying the policy.' }
         ]
       },
       {
@@ -962,9 +963,9 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
   const [kbArticles] = useState([
     {
       id: 'KB-881',
-      title: 'Agent Onboarding Fee & Refund Policy',
+      title: 'Agent Onboarding Fee & Non-Refundable Policy',
       category: 'PAYMENTS',
-      content: 'If an applicant fails KYC due to non-compliance or document rejection, 100% of the registration fee is refunded within 3-5 banking days.'
+      content: 'Agent registration and partner onboarding fees are final and non-refundable per platform commercial terms. KYC compliance disputes require supervisor review.'
     },
     {
       id: 'KB-882',
@@ -995,8 +996,8 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
       author: 'Sarah Jenkins (Query TL)',
       level: 'IMPORTANT',
       time: 'Yesterday',
-      title: 'New Refund Policy Exception Protocol',
-      content: 'Any refund dispute exceeding $1,000 must have an internal whisper note and TL sign-off before closure.'
+      title: 'New Billing Dispute Settlement Protocol',
+      content: 'Any commercial billing dispute exceeding $1,000 must have an internal whisper note and TL sign-off before closure.'
     }
   ]);
 
@@ -1369,7 +1370,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
                           customerName: 'David Miller',
                           category: 'High Priority Query Escalation',
                           sender: sup.fullLabel,
-                          message: 'Urgent from Query Lead: Customer David Miller is waiting on voice line for VIP refund status. Please open case immediately.',
+                          message: 'Urgent from Query Lead: Customer David Miller is waiting on voice line for VIP billing dispute status. Please open case immediately.',
                           timestamp: 'Just Now',
                           read: false
                         };
@@ -1514,8 +1515,35 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         }
       `}</style>
 
-      {/* KYC & PAYMENT HUMAN OFFICER WORKSPACES */}
-      {role === UserRole.KYC_AGENT ? (
+      {/* KYC, PAYMENT & QUERY AGENT OMNICHANNEL DESK ROUTING */}
+      {(activeSubTab === 'LIVE_CHAT' ||
+        activeSubTab === 'INBOUND_CALLS' ||
+        activeSubTab === 'CALL_DIALER' ||
+        activeSubTab === 'APPLICANT_CALLS' ||
+        activeSubTab === 'PAYMENT_REMINDERS' ||
+        activeSubTab === 'EMAIL_INBOX' ||
+        activeSubTab === 'WHATSAPP' ||
+        activeSubTab === 'WHATSAPP_SMS_DISPATCH') ? (
+        <div style={{ width: '100%' }}>
+          <OmnichannelDeskSuite
+            initialChannel={
+              activeSubTab === 'INBOUND_CALLS' || activeSubTab === 'CALL_DIALER' || activeSubTab === 'APPLICANT_CALLS' || activeSubTab === 'PAYMENT_REMINDERS'
+                ? 'INBOUND_CALLS'
+                : activeSubTab === 'EMAIL_INBOX'
+                ? 'EMAIL_INBOX'
+                : activeSubTab === 'WHATSAPP' || activeSubTab === 'WHATSAPP_SMS_DISPATCH'
+                ? 'WHATSAPP'
+                : 'LIVE_CHAT'
+            }
+            userRole={role}
+            agentName={role === UserRole.KYC_AGENT ? 'Rohan Mehta (KYC Officer)' : role === UserRole.PAYMENT_AGENT ? 'Suresh Reddy (Payment Officer)' : 'Alex Rivera (Query Specialist)'}
+            agentStatus="Available"
+            onTicketCreate={(t) => {
+              setToastMessage(`Created ${role === UserRole.KYC_AGENT ? 'KYC' : role === UserRole.PAYMENT_AGENT ? 'Payment' : 'Query'} support ticket for ${t.customer} (${t.channel})`);
+            }}
+          />
+        </div>
+      ) : role === UserRole.KYC_AGENT ? (
         <KycHumanOfficerWorkspace
           activeSubTab={activeSubTab}
           onSelectSubTab={onSelectSubTab}
@@ -1652,7 +1680,18 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
                   <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
                     {selectedSession.customerName}
                   </h2>
-                  <span className="badge badge-info">{selectedSession.ticketId}</span>
+                  <button
+                    onClick={() => {
+                      const targetChannel = getChannelForTicket(selectedSession);
+                      setToastMessage(`Routing Ticket ${selectedSession.ticketId} to ${targetChannel.replace('_', ' ')} desk...`);
+                      if (onSelectSubTab) onSelectSubTab(targetChannel);
+                    }}
+                    className="badge badge-info"
+                    style={{ cursor: 'pointer', border: '1px solid #38bdf8' }}
+                    title={`Click to open in ${getChannelForTicket(selectedSession).replace('_', ' ')} workspace`}
+                  >
+                    {selectedSession.ticketId}
+                  </button>
                   <span className={`badge ${selectedSession.sentiment === 'FRUSTRATED' ? 'badge-danger' : 'badge-success'}`}>
                     {selectedSession.sentiment}
                   </span>
@@ -1906,7 +1945,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
                 {/* Quick Canned Action Pills & AI Smart Suggestions Trigger Button */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.7rem' }}>
-                    <button className="btn btn-secondary" onClick={() => handleSendMessage('100% of onboarding fees are refunded within 3-5 business days.')} style={{ padding: '0.2rem 0.5rem', fontSize: '0.68rem' }}>Refund Terms</button>
+                    <button className="btn btn-secondary" onClick={() => handleSendMessage('Registration fees are final and non-refundable per platform terms.')} style={{ padding: '0.2rem 0.5rem', fontSize: '0.68rem' }}>Policy Terms</button>
                     <button className="btn btn-secondary" onClick={() => handleSendMessage('Please upload a clear 300 DPI scan of your original document.')} style={{ padding: '0.2rem 0.5rem', fontSize: '0.68rem' }}>KYC Re-upload</button>
                     <button className="btn btn-secondary" onClick={() => handleSendMessage('Your request has been prioritized with our Level 2 accounts officer.')} style={{ padding: '0.2rem 0.5rem', fontSize: '0.68rem' }}>Expedite Case</button>
                     <button className="btn btn-secondary" onClick={() => handleSendMessage('Is there anything else I can assist you with today?')} style={{ padding: '0.2rem 0.5rem', fontSize: '0.68rem' }}>Closing Courtesy</button>
@@ -2081,7 +2120,34 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
                 {/* 1. Ticket ID */}
                 <div>
                   <div className="kpi-card-header"><span className="kpi-title-modern">Ticket Ref</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><code style={{ fontSize: '0.86rem', fontWeight: 800, color: '#38bdf8' }}>{s.ticketId}</code> <TicketVisionButton ticket={{ id: s.ticketId, ticketNumber: s.ticketId, customerName: s.customerName, customerPhone: s.customerPhone, departmentLabel: 'Human Agent Desk', status: s.status, isEscalated: s.isEscalated }} compact size="sm" /></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <button
+                      onClick={() => {
+                        const targetChannel = getChannelForTicket(s);
+                        setToastMessage(`Routing Ticket ${s.ticketId} (${s.customerName}) to ${targetChannel.replace('_', ' ')} desk...`);
+                        if (onSelectSubTab) onSelectSubTab(targetChannel);
+                      }}
+                      style={{
+                        background: 'rgba(2, 132, 199, 0.12)',
+                        border: '1px solid rgba(2, 132, 199, 0.3)',
+                        padding: '0.2rem 0.45rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontFamily: 'monospace',
+                        fontWeight: 800,
+                        fontSize: '0.86rem',
+                        color: '#38bdf8',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title={`Click to open ticket in ${getChannelForTicket(s).replace('_', ' ')} workspace`}
+                    >
+                      {s.ticketId}
+                    </button>
+                    <TicketVisionButton ticket={{ id: s.ticketId, ticketNumber: s.ticketId, customerName: s.customerName, customerPhone: s.customerPhone, departmentLabel: 'Human Agent Desk', status: s.status, isEscalated: s.isEscalated }} compact size="sm" />
+                  </div>
                 </div>
 
                 {/* 2. Customer Profile */}
@@ -2215,8 +2281,34 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
               >
                 {/* 1. Ticket ID */}
                 <div>
-                  <div className="kpi-card-header"><span className="kpi-title-modern">Ticket Ref</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><code style={{ fontSize: '0.86rem', fontWeight: 800, color: '#38bdf8' }}>{s.ticketId}</code> <TicketVisionButton ticket={{ id: s.ticketId, ticketNumber: s.ticketId, customerName: s.customerName, customerPhone: s.customerPhone, departmentLabel: 'Human Agent Desk', status: s.status, isEscalated: s.isEscalated }} compact size="sm" /></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <button
+                      onClick={() => {
+                        const targetChannel = getChannelForTicket(s);
+                        setToastMessage(`Routing Ticket ${s.ticketId} (${s.customerName}) to ${targetChannel.replace('_', ' ')} desk...`);
+                        if (onSelectSubTab) onSelectSubTab(targetChannel);
+                      }}
+                      style={{
+                        background: 'rgba(2, 132, 199, 0.12)',
+                        border: '1px solid rgba(2, 132, 199, 0.3)',
+                        padding: '0.2rem 0.45rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontFamily: 'monospace',
+                        fontWeight: 800,
+                        fontSize: '0.86rem',
+                        color: '#38bdf8',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title={`Click to open ticket in ${getChannelForTicket(s).replace('_', ' ')} workspace`}
+                    >
+                      {s.ticketId}
+                    </button>
+                    <TicketVisionButton ticket={{ id: s.ticketId, ticketNumber: s.ticketId, customerName: s.customerName, customerPhone: s.customerPhone, departmentLabel: 'Human Agent Desk', status: s.status, isEscalated: s.isEscalated }} compact size="sm" />
+                  </div>
                 </div>
 
                 {/* 2. Customer Profile */}
@@ -2869,543 +2961,33 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
         </div>
       )}
 
-      {/* SUBTAB 4: MULTI-CHANNEL LIVE STREAM (INTERACTIVE CHAT, VOICE, WHATSAPP, EMAIL DESK) */}
-      {activeSubTab === 'MULTI_CHANNEL_STREAM' && (
-        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.65rem' }}>
-            <div>
-              <h3 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Layers size={16} color="#0284c7" /> Real-Time Channel Selector
-              </h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
-                Select a communication channel below to inspect real-time inbound conversations, audio transcripts, or email drafts.
-              </p>
-            </div>
-            <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '0.25rem 0.65rem' }}>
-              4 Channels Live Ingesting
-            </span>
-          </div>
-
-          {/* 4 Interactive Channel Switcher Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
-            
-            {/* Card 1: Web Chat */}
-            <div
-              onClick={() => {
-                setSelectedChannelFilter('CHAT_WEB');
-                setSelectedChannelSession(multiChannelData.CHAT_WEB[0]);
-              }}
-              style={{
-                background: selectedChannelFilter === 'CHAT_WEB' ? 'rgba(247, 181, 0, 0.12)' : 'var(--bg-dark)',
-                border: selectedChannelFilter === 'CHAT_WEB' ? '2px solid #f7b500' : '1px solid var(--border-color)',
-                padding: '0.85rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedChannelFilter === 'CHAT_WEB' ? '0 2px 10px rgba(247, 181, 0, 0.25)' : 'none'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: selectedChannelFilter === 'CHAT_WEB' ? '#d97706' : 'var(--text-main)', fontSize: '0.9rem' }}>Web Chat</strong>
-                <span className="badge badge-warning" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{multiChannelData.CHAT_WEB.length} Active</span>
-              </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
-                94% handled by Gemini RAG • Real-time web socket
-              </p>
-            </div>
-
-            {/* Card 2: Voice Twilio */}
-            <div
-              onClick={() => {
-                setSelectedChannelFilter('VOICE_TWILIO');
-                setSelectedChannelSession(multiChannelData.VOICE_TWILIO[0]);
-              }}
-              style={{
-                background: selectedChannelFilter === 'VOICE_TWILIO' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-dark)',
-                border: selectedChannelFilter === 'VOICE_TWILIO' ? '2px solid #10b981' : '1px solid var(--border-color)',
-                padding: '0.85rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedChannelFilter === 'VOICE_TWILIO' ? '0 2px 10px rgba(16, 185, 129, 0.25)' : 'none'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: selectedChannelFilter === 'VOICE_TWILIO' ? '#059669' : 'var(--text-main)', fontSize: '0.9rem' }}>Twilio PSTN Voice</strong>
-                <span className="badge badge-success" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{multiChannelData.VOICE_TWILIO.length} Live</span>
-              </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
-                Voice bot active • Live speech-to-text transcription
-              </p>
-            </div>
-
-            {/* Card 3: WhatsApp Business */}
-            <div
-              onClick={() => {
-                setSelectedChannelFilter('WHATSAPP');
-                setSelectedChannelSession(multiChannelData.WHATSAPP[0]);
-              }}
-              style={{
-                background: selectedChannelFilter === 'WHATSAPP' ? 'rgba(2, 132, 199, 0.12)' : 'var(--bg-dark)',
-                border: selectedChannelFilter === 'WHATSAPP' ? '2px solid #0284c7' : '1px solid var(--border-color)',
-                padding: '0.85rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedChannelFilter === 'WHATSAPP' ? '0 2px 10px rgba(2, 132, 199, 0.25)' : 'none'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: selectedChannelFilter === 'WHATSAPP' ? '#0284c7' : 'var(--text-main)', fontSize: '0.9rem' }}>WhatsApp Business</strong>
-                <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{multiChannelData.WHATSAPP.length} Active</span>
-              </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
-                Automated QR codes & commission receipts
-              </p>
-            </div>
-
-            {/* Card 4: Email Support */}
-            <div
-              onClick={() => {
-                setSelectedChannelFilter('EMAIL');
-                setSelectedChannelSession(multiChannelData.EMAIL[0]);
-              }}
-              style={{
-                background: selectedChannelFilter === 'EMAIL' ? 'rgba(147, 51, 234, 0.12)' : 'var(--bg-dark)',
-                border: selectedChannelFilter === 'EMAIL' ? '2px solid #9333ea' : '1px solid var(--border-color)',
-                padding: '0.85rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: selectedChannelFilter === 'EMAIL' ? '0 2px 10px rgba(147, 51, 234, 0.25)' : 'none'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: selectedChannelFilter === 'EMAIL' ? '#9333ea' : 'var(--text-main)', fontSize: '0.9rem' }}>Email Support</strong>
-                <span className="badge badge-secondary" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{multiChannelData.EMAIL.length} In Review</span>
-              </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
-                Drafts waiting agent review & GST invoices
-              </p>
-            </div>
-
-          </div>
-
-          {/* Interactive Split Screen View: Left Channel List, Right Conversation Inspector */}
-          <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '1rem', alignItems: 'start' }}>
-            
-            {/* Left Column: Channel Session List */}
-            <div className="glass-panel" style={{ padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.45rem' }}>
-                <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
-                  {selectedChannelFilter === 'CHAT_WEB' ? 'Live Web Chats' : selectedChannelFilter === 'VOICE_TWILIO' ? 'Active Voice Calls' : selectedChannelFilter === 'WHATSAPP' ? 'WhatsApp Messages' : 'Email Threads'}
-                </strong>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{multiChannelData[selectedChannelFilter]?.length} Items</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '460px', overflowY: 'auto' }}>
-                {multiChannelData[selectedChannelFilter]?.map(item => {
-                  const isSelected = selectedChannelSession?.id === item.id;
-                  const isFrustrated = item.sentiment === 'FRUSTRATED';
-
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelectedChannelSession(item)}
-                      style={{
-                        padding: '0.65rem 0.75rem',
-                        borderRadius: '6px',
-                        background: isSelected ? 'rgba(2, 132, 199, 0.15)' : 'var(--bg-dark)',
-                        border: isFrustrated ? '2px solid #ef4444' : isSelected ? '1.5px solid #0284c7' : '1px solid var(--border-color)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.2rem',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>{item.customerName}</strong>
-                        <span className={`badge ${item.status === 'LIVE_AI' ? 'badge-success' : 'badge-secondary'}`} style={{ fontSize: '0.62rem', padding: '0.1rem 0.35rem' }}>
-                          {item.ticketId}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                        {item.category}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: '#0284c7', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        "{item.preview}"
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.68rem', marginTop: '0.15rem' }}>
-                        <span style={{ color: isFrustrated ? '#ef4444' : '#059669', fontWeight: 700 }}>
-                          {isFrustrated ? 'FRUSTRATED' : `AI: ${item.aiConfidence}%`}
-                        </span>
-                        <span style={{ color: 'var(--text-muted)' }}>{item.duration}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Column: Full Conversation Inspector & Takeover Screen */}
-            {selectedChannelSession ? (
-              <div className="glass-panel" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                
-                {/* Header of Selected Channel Item */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.65rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                        {selectedChannelSession.customerName}
-                      </h4>
-                      <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{selectedChannelSession.ticketId}</span>
-                      <span className={`badge ${selectedChannelSession.sentiment === 'FRUSTRATED' ? 'badge-danger' : 'badge-success'}`} style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>
-                        {selectedChannelSession.sentiment}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                      Phone: <strong style={{ color: 'var(--text-main)' }}>{selectedChannelSession.customerPhone}</strong> • {selectedChannelSession.accountType} • <span style={{ color: '#d97706', fontWeight: 700 }}>SLA: {selectedChannelSession.slaCountdown}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions: Takeover, Call, Open in Live Desk */}
-                  <div style={{ display: 'flex', gap: '0.45rem' }}>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        setSelectedSession(selectedChannelSession);
-                        handleTakeover(selectedChannelSession.id);
-                        if (onSelectSubTab) onSelectSubTab('AGENT_DESK');
-                      }}
-                      style={{ background: 'linear-gradient(135deg, #f7b500 0%, #eab308 100%)', color: '#000', fontWeight: 800, fontSize: '0.74rem', padding: '0.45rem 0.85rem', borderRadius: '8px' }}
-                    >
-                      Take Over Session
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => handleStartCall(selectedChannelSession.customerPhone)}
-                      style={{ fontSize: '0.74rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem', borderRadius: '8px' }}
-                    >
-                      <PhoneCall size={13} style={{ color: '#059669' }} /> Direct Call
-                    </button>
-                  </div>
-                </div>
-
-                {/* Channel Meta & AI Status Bar */}
-                <div style={{ padding: '0.5rem 0.75rem', background: 'var(--bg-dark)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.74rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)' }}>Assigned AI Agent: </span>
-                    <strong style={{ color: '#0284c7' }}>{selectedChannelSession.aiAgent}</strong>
-                  </div>
-                  <div style={{ color: '#d97706', fontWeight: 700 }}>
-                    Confidence: {selectedChannelSession.aiConfidence}% Cosine Match
-                  </div>
-                </div>
-
-                {/* Check if channel is EMAIL vs VOICE_TWILIO vs CHAT/WHATSAPP */}
-                {selectedChannelFilter === 'EMAIL' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    
-                    {/* Email Subject Strip */}
-                    <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.65rem 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>SUBJECT:</span>
-                        <h4 style={{ margin: '0.1rem 0 0 0', fontSize: '0.88rem', color: '#d97706', fontWeight: 700 }}>
-                          {selectedChannelSession.subject || 'Vendor Support Inquiry'}
-                        </h4>
-                      </div>
-                      <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem' }}>{selectedChannelSession.ticketId}</span>
-                    </div>
-
-                    {/* Collapsible / Scrollable Continuous Email Thread */}
-                    <div style={{ height: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
-                      {selectedChannelSession.chatHistory?.map((emailMsg: any, idx: number) => {
-                        const isCustomer = emailMsg.sender === 'CUSTOMER';
-
-                        return (
-                          <div
-                            key={idx}
-                            style={{
-                              background: isCustomer ? 'rgba(2, 132, 199, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-                              border: isCustomer ? '1px solid rgba(2, 132, 199, 0.25)' : '1px solid rgba(16, 185, 129, 0.25)',
-                              borderRadius: '8px',
-                              padding: '0.85rem',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '0.5rem'
-                            }}
-                          >
-                            {/* Email Header info: From, To, Date */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.4rem', fontSize: '0.74rem' }}>
-                              <div>
-                                <div>
-                                  <strong style={{ color: isCustomer ? '#0284c7' : '#059669' }}>
-                                    {isCustomer ? 'From:' : 'From:'}
-                                  </strong>{' '}
-                                  <span style={{ color: 'var(--text-main)' }}>{emailMsg.from || selectedChannelSession.customerName}</span>
-                                </div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', marginTop: '0.1rem' }}>
-                                  <strong>To:</strong> {emailMsg.to || 'support@forgeconnect.in'}
-                                </div>
-                              </div>
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>
-                                {emailMsg.date || 'Today'}
-                              </span>
-                            </div>
-
-                            {/* Full Email Body */}
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', whiteSpace: 'pre-wrap', lineHeight: '1.45' }}>
-                              {emailMsg.text}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Formal Email Compose & Reply Terminal */}
-                    <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                        <div>
-                          <strong>Reply To:</strong> <span style={{ color: '#0284c7' }}>{selectedChannelSession.customerEmail || selectedChannelSession.customerPhone}</span>
-                        </div>
-                        <span style={{ color: '#d97706' }}>Outgoing SMTP Verified</span>
-                      </div>
-
-                      <textarea
-                        className="form-input"
-                        rows={3}
-                        placeholder={`Dear ${selectedChannelSession.customerName},\n\nType your formal email reply here...`}
-                        value={humanMessage}
-                        onChange={e => setHumanMessage(e.target.value)}
-                        style={{ fontSize: '0.8rem', lineHeight: '1.35' }}
-                      />
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', gap: '0.35rem' }}>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() => setHumanMessage(`Dear ${selectedChannelSession.customerName},\n\nWe have reviewed your request and confirmed your account status is fully active. Let us know if you need anything else.\n\nBest Regards,\nRahul Sharma\nForge Support Specialist`)}
-                            style={{ fontSize: '0.68rem', padding: '0.25rem 0.55rem' }}
-                          >
-                            + Quick Approval Template
-                          </button>
-                        </div>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => {
-                            if (!humanMessage.trim()) return;
-                            const newEmailMsg = {
-                              sender: 'HUMAN_AGENT',
-                              from: 'Rahul Sharma <rahul.sharma@forgeconnect.in>',
-                              to: selectedChannelSession.customerEmail || 'customer@enterprise.com',
-                              subject: `Re: ${selectedChannelSession.subject || 'Support Inquiry'}`,
-                              date: 'Just Now',
-                              text: humanMessage
-                            };
-                            setSelectedChannelSession((prev: any) => ({
-                              ...prev,
-                              chatHistory: [...(prev.chatHistory || []), newEmailMsg]
-                            }));
-                            setHumanMessage('');
-                            showToast(`Formal email reply sent to ${selectedChannelSession.customerName}!`);
-                          }}
-                          disabled={!humanMessage.trim()}
-                          style={{ background: 'linear-gradient(135deg, #f7b500 0%, #eab308 100%)', color: '#000', fontWeight: 800, padding: '0.45rem 0.95rem', fontSize: '0.76rem', borderRadius: '8px' }}
-                        >
-                          <Send size={13} /> Send Official Email
-                        </button>
-                      </div>
-                    </div>
-
-                  </div>
-                ) : selectedChannelFilter === 'VOICE_TWILIO' ? (
-                  /* Dedicated Twilio PSTN Voice Call Operations Console */
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    
-                    {/* Live Call Telephony Status & Audio Waveform */}
-                    <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #10b981', borderRadius: '8px', padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }} />
-                          <strong style={{ color: '#059669', fontSize: '0.86rem' }}>TWILIO PSTN TRUNK: LIVE CALL CONNECTED</strong>
-                        </div>
-                        <span style={{ fontSize: '0.74rem', color: '#d97706', fontWeight: 700 }}>
-                          Call Duration: {selectedChannelSession.duration || '2m 10s'}
-                        </span>
-                      </div>
-
-                      {/* Animated Audio Oscilloscope Visualizer */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', height: '34px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0 0.75rem' }}>
-                        {[40, 75, 95, 60, 30, 85, 100, 70, 45, 90, 65, 35, 80, 100, 55, 85, 65, 40, 90, 70, 50, 80, 60, 40].map((h, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              width: '3.5px',
-                              height: `${h}%`,
-                              background: i % 2 === 0 ? '#059669' : '#0284c7',
-                              borderRadius: '2px',
-                              transition: 'all 0.2s ease'
-                            }}
-                          />
-                        ))}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                        <span>Codec: <strong style={{ color: 'var(--text-main)' }}>Opus 24kHz HD Voice</strong> • Gateway: <strong style={{ color: 'var(--text-main)' }}>Mumbai AP-South</strong></span>
-                        <span>Twilio SID: <code style={{ color: '#0284c7' }}>CA9920148bf02...</code></span>
-                      </div>
-                    </div>
-
-                    {/* Live Speech-to-Text Transcription Stream */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem' }}>
-                        <strong style={{ color: '#0284c7', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <Volume2 size={14} /> Real-Time Voice Transcription (Speech-to-Text)
-                        </strong>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>Whisper v3 Neural Engine</span>
-                      </div>
-
-                      <div style={{ height: '220px', overflowY: 'auto', background: 'var(--bg-dark)', borderRadius: '8px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', border: '1px solid var(--border-color)' }}>
-                        {selectedChannelSession.chatHistory?.map((msg: any, idx: number) => {
-                          const isCustomer = msg.sender === 'CUSTOMER';
-
-                          return (
-                            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', padding: '0.55rem 0.75rem', background: isCustomer ? 'rgba(2, 132, 199, 0.08)' : 'rgba(16, 185, 129, 0.08)', borderLeft: isCustomer ? '3px solid #0284c7' : '3px solid #059669', borderRadius: '4px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem' }}>
-                                <strong style={{ color: isCustomer ? '#0284c7' : '#059669' }}>
-                                  {isCustomer ? `[Customer Spoke] ${selectedChannelSession.customerName}:` : `[AI Bot Spoke] Voice Bot AI:`}
-                                </strong>
-                                <span style={{ color: 'var(--text-muted)' }}>Confidence: 99.1%</span>
-                              </div>
-                              <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.4', fontStyle: 'italic' }}>
-                                "{msg.text}"
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Human Telephony Control Bar */}
-                    <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.65rem 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.45rem' }}>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => {
-                            setSelectedSession(selectedChannelSession);
-                            handleTakeover(selectedChannelSession.id);
-                            if (onSelectSubTab) onSelectSubTab('AGENT_DESK');
-                          }}
-                          style={{ background: 'linear-gradient(135deg, #f7b500 0%, #eab308 100%)', color: '#000', fontWeight: 800, fontSize: '0.74rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem', borderRadius: '8px' }}
-                        >
-                          Barge-In & Speak (Takeover Call)
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          onClick={() => showToast('Muted AI audio stream. Human officer microphone live.')}
-                          style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', borderRadius: '6px' }}
-                        >
-                          Mute AI
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          onClick={() => showToast('Transferred call to Level 2 KYC Senior Officer.')}
-                          style={{ fontSize: '0.72rem', padding: '0.4rem 0.65rem', borderRadius: '6px' }}
-                        >
-                          Transfer Call
-                        </button>
-                      </div>
-
-                      <button
-                        className="btn btn-secondary"
-                        onClick={handleEndCall}
-                        style={{ background: '#ef4444', color: '#fff', fontSize: '0.72rem', padding: '0.4rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem', borderRadius: '6px', border: 'none' }}
-                      >
-                        <PhoneOff size={13} /> Hang Up Call
-                      </button>
-                    </div>
-
-                  </div>
-                ) : (
-                  <>
-                    {/* Chat Window for Web Chat, WhatsApp */}
-                    <div style={{ height: '280px', overflowY: 'auto', background: 'var(--bg-dark)', borderRadius: '8px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', border: '1px solid var(--border-color)' }}>
-                      {selectedChannelSession.chatHistory?.map((msg: any, idx: number) => {
-                        const isCustomer = msg.sender === 'CUSTOMER';
-
-                        return (
-                          <div
-                            key={idx}
-                            style={{
-                              alignSelf: isCustomer ? 'flex-start' : 'flex-end',
-                              maxWidth: '82%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: isCustomer ? 'flex-start' : 'flex-end'
-                            }}
-                          >
-                            <span style={{ fontSize: '0.66rem', color: isCustomer ? '#0284c7' : '#059669', marginBottom: '0.15rem', fontWeight: 700 }}>
-                              {isCustomer ? `${selectedChannelSession.customerName}` : `${selectedChannelSession.aiAgent}`}
-                            </span>
-                            <div
-                              style={{
-                                padding: '0.6rem 0.85rem',
-                                borderRadius: '8px',
-                                background: isCustomer ? 'rgba(2, 132, 199, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                                border: isCustomer ? '1px solid rgba(2, 132, 199, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
-                                fontSize: '0.82rem',
-                                color: 'var(--text-main)',
-                                lineHeight: '1.4',
-                                fontWeight: 500
-                              }}
-                            >
-                              {msg.text}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Direct Reply Bar */}
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <input
-                        className="form-input"
-                        placeholder={`Reply directly to ${selectedChannelSession.customerName} on ${selectedChannelFilter}...`}
-                        value={humanMessage}
-                        onChange={e => setHumanMessage(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            handleSendMessage();
-                            if (onSelectSubTab) onSelectSubTab('AGENT_DESK');
-                          }
-                        }}
-                        style={{ flex: 1, fontSize: '0.8rem', padding: '0.65rem 0.85rem' }}
-                      />
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                          handleSendMessage();
-                          if (onSelectSubTab) onSelectSubTab('AGENT_DESK');
-                        }}
-                        style={{ background: 'linear-gradient(135deg, #f7b500 0%, #eab308 100%)', color: '#000', fontWeight: 800, fontSize: '0.78rem', padding: '0.65rem 1.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem', borderRadius: '8px' }}
-                      >
-                        <Send size={13} /> Send Reply
-                      </button>
-                    </div>
-                  </>
-                )}
-
-              </div>
-            ) : (
-              <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Select an item on the left to inspect conversation stream.
-              </div>
-            )}
-
-          </div>
-
+      {/* SUBTAB 4: MULTI-CHANNEL LIVE STREAM (LIVE CHAT, INBOUND CALLS, EMAIL INBOX, WHATSAPP) */}
+      {(activeSubTab === 'MULTI_CHANNEL_STREAM' ||
+        activeSubTab === 'LIVE_CHAT' ||
+        activeSubTab === 'INBOUND_CALLS' ||
+        activeSubTab === 'CALL_DIALER' ||
+        activeSubTab === 'APPLICANT_CALLS' ||
+        activeSubTab === 'EMAIL_INBOX' ||
+        activeSubTab === 'WHATSAPP' ||
+        activeSubTab === 'WHATSAPP_SMS_DISPATCH') && (
+        <div style={{ width: '100%' }}>
+          <OmnichannelDeskSuite
+            initialChannel={
+              activeSubTab === 'INBOUND_CALLS' || activeSubTab === 'CALL_DIALER' || activeSubTab === 'APPLICANT_CALLS'
+                ? 'INBOUND_CALLS'
+                : activeSubTab === 'EMAIL_INBOX'
+                ? 'EMAIL_INBOX'
+                : activeSubTab === 'WHATSAPP' || activeSubTab === 'WHATSAPP_SMS_DISPATCH'
+                ? 'WHATSAPP'
+                : 'LIVE_CHAT'
+            }
+            userRole={role}
+            agentName="Alex Rivera"
+            agentStatus="Available"
+            onTicketCreate={(t) => {
+              setToastMessage(`Created support ticket for ${t.customer} (${t.channel})`);
+            }}
+          />
         </div>
       )}
 
@@ -3607,7 +3189,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
             <div style={{ background: 'var(--bg-dark)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-main)' }}>Recent Call Logs & Audio Recordings</h4>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                • <strong>Sophia Chen</strong> (1m 24s) — Refund advisory confirmed • Transcript archived.<br />
+                • <strong>Sophia Chen</strong> (1m 24s) — Policy terms advisory confirmed • Transcript archived.<br />
                 • <strong>David Miller</strong> (2m 10s) — Aadhaar blur clarification completed.
               </div>
             </div>
@@ -3747,13 +3329,13 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
 
                     <div
                       onClick={() => {
-                        setSmsMessage('Your Forge India registration refund of $500.00 has been processed successfully. UTR #HDFC-9920148. Funds will reflect in your account within 24-48 hours.');
+                        setSmsMessage('Your Forge India partner registration fee receipt of $500.00 is generated. Invoice #INV-9920148. Download link sent to your email.');
                         setShowTemplatesPopup(false);
                       }}
                       style={{ background: 'var(--bg-dark)', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.15s ease' }}
                     >
-                      <strong style={{ fontSize: '0.8rem', color: '#38bdf8', display: 'block', marginBottom: '0.2rem' }}>Registration Fee Refund Receipt</strong>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Shares UTR reference number for fee refund.</span>
+                      <strong style={{ fontSize: '0.8rem', color: '#38bdf8', display: 'block', marginBottom: '0.2rem' }}>Registration Fee Tax Invoice Receipt</strong>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Shares official tax invoice reference number.</span>
                     </div>
 
                     <div
@@ -4435,7 +4017,7 @@ export const HumanAgentDashboard: React.FC<HumanAgentDashboardProps> = ({ role, 
                     <span style={{ color: '#d97706', fontWeight: 700 }}>5.0</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: '1.4' }}>
-                    "Rahul immediately confirmed my refund policy doubt and cleared my commission ledger balance in seconds!"
+                    "Rahul immediately confirmed my billing dispute query and cleared my commission ledger balance in seconds!"
                   </p>
                 </div>
 

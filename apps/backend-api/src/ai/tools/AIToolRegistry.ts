@@ -2159,15 +2159,15 @@ AIToolRegistry.registerTool({
   status: 'APPROVED'
 });
 
-// 11. Refund Tools (Strictly Governed Flow)
+// 11. Policy & Settlement Finality Tools (Strict No-Refund Rule Enforced)
 AIToolRegistry.registerTool({
   toolId: 'TOOL-REFUND-01',
   name: 'getRefundPolicy',
   category: AIToolCategory.PAYMENT,
-  description: 'Fetch organization refund policy guidelines, cooling-off windows & deduction schedules.',
+  description: 'Fetch organization strict No-Refund policy terms (All onboarding, service fees, and license deposits are strictly non-refundable and final).',
   department: Department.PAYMENT,
   owner: 'POLICY_TEAM',
-  version: '1.0.0',
+  version: '2.0.0',
   inputSchema: { category: { type: 'string', required: false }, tier: { type: 'string', required: false } },
   outputSchema: { policyTerms: { type: 'string' }, windowHours: { type: 'number' } },
   requiredPermissions: ['read:policy'],
@@ -2184,10 +2184,10 @@ AIToolRegistry.registerTool({
   toolId: 'TOOL-REFUND-02',
   name: 'checkRefundEligibility',
   category: AIToolCategory.PAYMENT,
-  description: 'Evaluate order/booking timestamp, cancellation state, and merchant policy to compute refundable amount.',
+  description: 'Checks transaction status and enforces strict No-Refund policy (always evaluates isEligible as false per company rules).',
   department: Department.PAYMENT,
   owner: 'FINANCE_TEAM',
-  version: '1.0.0',
+  version: '2.0.0',
   inputSchema: { customerId: { type: 'string', required: true }, orderId: { type: 'string', required: false }, bookingId: { type: 'string', required: false }, reason: { type: 'string', required: true } },
   outputSchema: { isEligible: { type: 'boolean' }, refundableAmount: { type: 'number' }, deductionFee: { type: 'number' } },
   requiredPermissions: ['read:payment'],
@@ -2204,10 +2204,10 @@ AIToolRegistry.registerTool({
   toolId: 'TOOL-REFUND-03',
   name: 'createRefundRequest',
   category: AIToolCategory.PAYMENT,
-  description: 'Draft and queue a formal refund request ticket for Team Lead / Super Admin review. (AI cannot disburse directly)',
+  description: 'DEPRECATED: Refund requests are disabled platform-wide under the No-Refund policy.',
   department: Department.PAYMENT,
   owner: 'FINANCE_TEAM',
-  version: '1.0.0',
+  version: '2.0.0',
   inputSchema: { customerId: { type: 'string', required: true }, amount: { type: 'number', required: true }, reason: { type: 'string', required: true }, orderId: { type: 'string', required: false }, bookingId: { type: 'string', required: false }, transactionId: { type: 'string', required: false }, refundMode: { type: 'string', required: false } },
   outputSchema: { refundRequestId: { type: 'string' }, status: { type: 'string' }, approvalRequired: { type: 'boolean' } },
   requiredPermissions: ['write:refund'],
@@ -2217,17 +2217,17 @@ AIToolRegistry.registerTool({
   allowedTenants: ['*'],
   timeoutMs: 2500,
   idempotencyKeyRequired: true,
-  status: 'APPROVED'
+  status: 'DRAFT'
 });
 
 AIToolRegistry.registerTool({
   toolId: 'TOOL-REFUND-04',
   name: 'getRefundStatus',
   category: AIToolCategory.PAYMENT,
-  description: 'Fetch current lifecycle stage of submitted refund request: QUEUED_FOR_APPROVAL, TL_APPROVED, PROCESSING, CREDITED, REJECTED.',
+  description: 'Returns No-Refund policy enforcement status for submitted billing inquiries.',
   department: Department.PAYMENT,
   owner: 'FINANCE_TEAM',
-  version: '1.0.0',
+  version: '2.0.0',
   inputSchema: { refundRequestId: { type: 'string', required: false }, customerId: { type: 'string', required: false }, orderId: { type: 'string', required: false }, bookingId: { type: 'string', required: false } },
   outputSchema: { status: { type: 'string' }, approvedBy: { type: 'string' }, settlementUtr: { type: 'string' } },
   requiredPermissions: ['read:payment'],
@@ -2835,10 +2835,10 @@ AIToolRegistry.registerTool({
   toolId: 'TOOL-PAY-02',
   name: 'payment.refund.request',
   category: AIToolCategory.PAYMENT,
-  description: 'Submits a money refund request gated by Human TL Approval.',
+  description: 'DEPRECATED: Refund requests disabled under No-Refund policy.',
   department: Department.PAYMENT,
   owner: 'PAYMENT_TEAM',
-  version: '1.0.0',
+  version: '2.0.0',
   inputSchema: { orderId: { type: 'string', required: true }, amount: { type: 'number', required: true } },
   outputSchema: { refundRequestId: { type: 'string' } },
   requiredPermissions: ['request:refund'],
@@ -2848,7 +2848,7 @@ AIToolRegistry.registerTool({
   allowedTenants: ['*'],
   timeoutMs: 5000,
   idempotencyKeyRequired: true,
-  status: 'APPROVED'
+  status: 'DRAFT'
 });
 
 // 5. KYC Tool

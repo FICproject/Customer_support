@@ -41,8 +41,8 @@ export class MasterAgentRegistryService {
       ],
       permissions: ['READ_ORDER_STORE', 'READ_QUERY_RAG', 'UPDATE_CUSTOMER_NOTES'],
       tools: ['query_order_status', 'search_knowledge_base', 'check_booking_details'],
-      knowledge: ['Order Management FAQs', 'Refund & Return Policy v2.1', 'Service Terms'],
-      prompt: 'You are Query AI. Assist users with accurate order, booking, and general service inquiries using citations.',
+      knowledge: ['Order Management FAQs', 'No-Refund & Terms Policy v2.1', 'Service Terms'],
+      prompt: 'You are Query AI. Assist users with accurate order, booking, and service inquiries. Enforce the platform strict No-Refund policy.',
       input: 'QueryIntentRequest (orderId, queryText, customerContext)',
       output: 'QueryResolutionResponse (answerText, sourceCitations, recommendedActions)',
       escalation: 'Escalates unresolved order disputes to Query Team Lead queue.',
@@ -78,20 +78,20 @@ export class MasterAgentRegistryService {
       agentCode: 'AI-PAYMENT-001',
       agentName: 'Payment AI Department Lead',
       department: Department.PAYMENT,
-      purpose: 'Handles payment verification, checkout links, wallet credit calculation, and refund processing gating.',
+      purpose: 'Handles payment verification, dynamic checkout links, multi-tier commission calculations, and ledger audit.',
       responsibilities: [
         'Check transaction statuses across gateway webhooks',
         'Generate dynamic payment links for pending orders',
         'Calculate and credit referral commissions ($50)',
-        'Gating refund requests for human TL approval'
+        'Enforcing platform strict No-Refund terms and logging payment settlements'
       ],
       permissions: ['READ_PAYMENT_GATEWAY', 'GENERATE_PAYMENT_LINK', 'CREDIT_AGENT_WALLET'],
-      tools: ['check_payment_status', 'generate_stripe_link', 'credit_wallet_balance', 'request_refund_approval'],
-      knowledge: ['Payment Gateway Gateway Specs', 'Refund Approval Limits', 'Referral Commission Rules'],
-      prompt: 'You are Payment AI. Verify payment transactions. Any refund above $0 requires Payment TL sign-off.',
-      input: 'PaymentCheckPayload (transactionId, orderId, refundAmount)',
+      tools: ['check_payment_status', 'generate_stripe_link', 'credit_wallet_balance', 'verify_settlement_finality'],
+      knowledge: ['Payment Gateway Gateway Specs', 'Strict No-Refund Terms', 'Referral Commission Rules'],
+      prompt: 'You are Payment AI. Verify payment transactions. Enforce the strict No-Refund policy across all registration and onboarding fees.',
+      input: 'PaymentCheckPayload (transactionId, orderId)',
       output: 'PaymentResolutionResponse (paymentStatus, linkUrl, walletCredited, escalationTicketId)',
-      escalation: 'Escalates all refund executions and chargeback disputes to Payment Team Lead queue.',
+      escalation: 'Escalates unverified payments and bank reconciliation disputes to Payment Team Lead queue.',
       status: AILifecycleStatus.ACTIVE,
       version: 'v2.8.0'
     });

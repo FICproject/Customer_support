@@ -353,7 +353,7 @@ export const ConnectAppPortal: React.FC<ConnectAppProps> = ({ activeSubTab = 'CH
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSendChat()}
-                placeholder="Type your query (e.g. 'I want a refund for order #8801' or 'Document OCR blur question')..."
+                placeholder="Type your query (e.g. 'Billing inquiry for order #8801' or 'Document OCR blur question')..."
               />
               <button className="btn btn-primary" onClick={handleSendChat} disabled={isProcessing}>
                 <Send size={16} /> Send

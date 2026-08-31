@@ -41,8 +41,14 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Radio
+  Radio,
+  Play,
+  Pause,
+  Download,
+  VolumeX,
+  RotateCcw
 } from 'lucide-react';
+import { OmnichannelDeskSuite, getChannelForTicket } from './OmnichannelDeskSuite';
 
 interface DepartmentTLProps {
   role: UserRole.QUERIES_TL | UserRole.KYC_TL | UserRole.PAYMENT_TL;
@@ -53,7 +59,99 @@ interface DepartmentTLProps {
 export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, activeSubTab, onSelectSubTab }) => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [kycRecords, setKycRecords] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([
+    {
+      id: 'REG-8822',
+      customerName: 'David Miller',
+      customerPhone: '+1 (555) 234-8899',
+      purpose: 'Customer Registration Onboarding Fee',
+      amount: 99.00,
+      reminderCallCount: 1,
+      status: 'CALL_ANSWERED',
+      callDuration: '42s',
+      callTime: 'Today 11:21 AM',
+      dialerAgent: 'AI-VOICE-004 (Twilio PSTN)',
+      outcome: 'Customer confirmed link received on WhatsApp; initiating UPI checkout.'
+    },
+    {
+      id: 'REG-8830',
+      customerName: 'Karthik Raja',
+      customerPhone: '+91 98450 11234',
+      purpose: 'Merchant Partner Terminal Activation',
+      amount: 600.00,
+      reminderCallCount: 4,
+      status: 'EXPIRED_ESCALATED',
+      callDuration: '1m 15s',
+      callTime: 'Today 10:58 AM',
+      dialerAgent: 'AI-VOICE-002 (Twilio PSTN)',
+      outcome: 'Link expired twice. Auto-escalated to Payment TL and Officer Suresh Reddy.'
+    },
+    {
+      id: 'REG-8823',
+      customerName: 'Robert Sterling',
+      customerPhone: '+1 (555) 345-9922',
+      purpose: 'Tier 1 Agent Partner Network License',
+      amount: 150.00,
+      reminderCallCount: 1,
+      status: 'CALL_COMPLETED',
+      callDuration: '38s',
+      callTime: 'Today 10:46 AM',
+      dialerAgent: 'AI-VOICE-004 (Twilio PSTN)',
+      outcome: 'Customer uploaded bank transfer receipt UTR #PUNB029104.'
+    },
+    {
+      id: 'REG-8821',
+      customerName: 'Sophia Chen',
+      customerPhone: '+1 (555) 890-1234',
+      purpose: 'Vendor Partner Platform Tier 1',
+      amount: 250.00,
+      reminderCallCount: 1,
+      status: 'PAYMENT_SETTLED',
+      callDuration: '29s',
+      callTime: 'Today 11:31 AM',
+      dialerAgent: 'AI-VOICE-001 (Twilio PSTN)',
+      outcome: 'Stripe 200 OK webhook confirmed. Automated Tax PDF invoice dispatched.'
+    },
+    {
+      id: 'REG-8824',
+      customerName: 'Frank Miller',
+      customerPhone: '+1 (555) 432-8811',
+      purpose: 'Vendor Enterprise Supply Verification',
+      amount: 350.00,
+      reminderCallCount: 2,
+      status: 'RETRY_PENDING',
+      callDuration: '12s (No Answer)',
+      callTime: 'Today 09:40 AM',
+      dialerAgent: 'AI-VOICE-003 (Twilio PSTN)',
+      outcome: 'User busy. Automated redial queued in 15 minutes.'
+    },
+    {
+      id: 'REG-8825',
+      customerName: 'Vikram Mehta',
+      customerPhone: '+91 99201 88412',
+      purpose: 'Hospitality Permit & Municipal Registration',
+      amount: 500.00,
+      reminderCallCount: 2,
+      status: 'PAYMENT_SETTLED',
+      callDuration: '54s',
+      callTime: 'Today 10:18 AM',
+      dialerAgent: 'AI-VOICE-001 (Twilio PSTN)',
+      outcome: 'Razorpay UPI confirmation received. Registration credentials released.'
+    },
+    {
+      id: 'REG-8826',
+      customerName: 'Aarav Patel',
+      customerPhone: '+91 98112 34567',
+      purpose: 'Enterprise Partner Annual Wholesale Fee',
+      amount: 1200.00,
+      reminderCallCount: 1,
+      status: 'CALL_SCHEDULED',
+      callDuration: 'Pending',
+      callTime: 'Scheduled 12:15 PM',
+      dialerAgent: 'AI-VOICE-002 (Twilio PSTN)',
+      outcome: 'Upcoming outbound AI reminder scheduled prior to wire settlement cut-off.'
+    }
+  ]);
   const [commissions, setCommissions] = useState<any[]>([]);
 
   const departmentName = role === UserRole.KYC_TL ? 'KYC Verification Department' : role === UserRole.QUERIES_TL ? 'Customer Queries Department' : 'Payment Operations Department';
@@ -144,7 +242,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
     customerPhone: '+91 98450 11234',
     customerRole: 'Enterprise Vendor Partner',
     transferredBy: 'Alex Vance (Senior Query Specialist)',
-    reason: 'Customer requested $1,200 fee refund override (> $1,000 policy limit). Requires Supervisor Approval.',
+    reason: 'Customer requested billing adjustment dispute. Requires Supervisor Review per No-Refund Terms.',
     sentiment: 'URGENT',
     status: 'RINGING' // 'RINGING' | 'IN_CALL'
   });
@@ -176,11 +274,11 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
       id: 'TCK-8821',
       customerName: 'Sophia Chen',
       role: 'Vendor Partner',
-      category: 'Agent Onboarding Fee Refund Policy',
+      category: 'Agent Onboarding Terms & Non-Refundable Policy',
       priority: 'HIGH',
       status: 'IN_PROGRESS',
       aiAgent: 'Query AI (Gemini 1.5 Pro)',
-      workflowStep: 'RAG Knowledge Lookup & Fee Refund Rule Check',
+      workflowStep: 'RAG Knowledge Lookup & Non-Refundable Policy Enforcement',
       timeWaiting: '1m 24s',
       slaStatus: 'SLA: 12m remaining'
     },
@@ -406,7 +504,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
       id: 'TCK-8846',
       customerName: 'Vikram Mehta (Hotel Grand)',
       role: 'Hospitality Partner',
-      category: 'Commercial Dispute over High Volume Fee Refund',
+      category: 'Commercial Dispute over High Volume Fee Clearance',
       priority: 'CRITICAL',
       status: 'ESCALATED',
       aiAgent: 'Query AI',
@@ -1707,6 +1805,245 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
     setEscalationSupervisorNote(`Please initiate direct PSTN voice call with ${item.customerName} and assist with checkout / bank UTR clearance.`);
   };
 
+  // Dedicated Interactive Outbound AI Redial Console State
+  const [activeRedialModal, setActiveRedialModal] = useState<any | null>(null);
+  const [redialPhase, setRedialPhase] = useState<'RINGING' | 'CONNECTED' | 'BARGED_IN' | 'ENDED'>('RINGING');
+  const [redialDuration, setRedialDuration] = useState<number>(0);
+  const [isRedialMuted, setIsRedialMuted] = useState<boolean>(false);
+  const [isRedialHeld, setIsRedialHeld] = useState<boolean>(false);
+  const [redialLiveTranscript, setRedialLiveTranscript] = useState<Array<{ speaker: 'AI' | 'CUSTOMER' | 'TL'; text: string; time: string }>>([]);
+
+  // Dedicated Interactive Call Recording & Audio Player Modal State
+  const [activeAudioPlayerModal, setActiveAudioPlayerModal] = useState<any | null>(null);
+  const [audioIsPlaying, setAudioIsPlaying] = useState<boolean>(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState<number>(0);
+  const [audioDuration, setAudioDuration] = useState<number>(42);
+  const [audioSpeed, setAudioSpeed] = useState<number>(1.0);
+  const [audioVolume, setAudioVolume] = useState<number>(1.0);
+  const [audioWaveform, setAudioWaveform] = useState<number[]>([15, 28, 45, 62, 80, 55, 30, 70, 92, 85, 40, 20, 60, 88, 75, 50, 65, 90, 82, 35, 25, 48, 70, 85, 60, 40, 78, 95, 68, 52, 35, 60, 80, 45, 20]);
+  const [audioTranscript, setAudioTranscript] = useState<Array<{ speaker: 'AI' | 'CUSTOMER'; time: string; text: string }>>([]);
+
+  // Timer Effect for Outbound Redial Call
+  useEffect(() => {
+    let timer: any;
+    if (activeRedialModal && (redialPhase === 'CONNECTED' || redialPhase === 'BARGED_IN')) {
+      timer = setInterval(() => {
+        setRedialDuration(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [activeRedialModal, redialPhase]);
+
+  // Ringing to Connected transition & live conversation simulation
+  useEffect(() => {
+    let connectTimeout: any;
+    if (activeRedialModal && redialPhase === 'RINGING') {
+      connectTimeout = setTimeout(() => {
+        setRedialPhase('CONNECTED');
+        setRedialLiveTranscript([
+          { speaker: 'AI', text: `Hello ${activeRedialModal.customerName}, this is FORGE INDIA automated payment desk. We noticed your payment of $${activeRedialModal.amount} is pending.`, time: '00:01' }
+        ]);
+      }, 2200);
+    }
+    return () => clearTimeout(connectTimeout);
+  }, [activeRedialModal, redialPhase]);
+
+  // Progressive live conversation flow in Redial modal
+  useEffect(() => {
+    if (!activeRedialModal || redialPhase === 'ENDED' || redialPhase === 'RINGING') return;
+
+    if (redialDuration === 5) {
+      setRedialLiveTranscript(prev => [
+        ...prev,
+        { speaker: 'CUSTOMER', text: 'Hi! Yes, I was trying to pay earlier but the checkout link timed out.', time: '00:05' }
+      ]);
+    } else if (redialDuration === 10) {
+      setRedialLiveTranscript(prev => [
+        ...prev,
+        { speaker: 'AI', text: 'Understood! I have dispatched a fresh 30-minute dynamic payment link to your WhatsApp and SMS.', time: '00:10' }
+      ]);
+    } else if (redialDuration === 15) {
+      setRedialLiveTranscript(prev => [
+        ...prev,
+        { speaker: 'CUSTOMER', text: 'Got the WhatsApp ping right now with the payment link. Completing it now!', time: '00:15' }
+      ]);
+    } else if (redialDuration === 20) {
+      setRedialLiveTranscript(prev => [
+        ...prev,
+        { speaker: 'AI', text: 'Great! Upon settlement, your receipt will be auto-dispatched. Have a wonderful day!', time: '00:20' }
+      ]);
+    }
+  }, [redialDuration, activeRedialModal, redialPhase]);
+
+  // Audio Player scrub & ticker effect
+  useEffect(() => {
+    let audioTimer: any;
+    if (activeAudioPlayerModal && audioIsPlaying) {
+      audioTimer = setInterval(() => {
+        setAudioCurrentTime(prev => {
+          if (prev >= audioDuration) {
+            setAudioIsPlaying(false);
+            return 0;
+          }
+          return Math.min(prev + 1, audioDuration);
+        });
+      }, 1000 / audioSpeed);
+    }
+    return () => clearInterval(audioTimer);
+  }, [activeAudioPlayerModal, audioIsPlaying, audioDuration, audioSpeed]);
+
+  // Trigger Outbound AI Redial
+  const handleTriggerRedial = (p: any) => {
+    setActiveRedialModal(p);
+    setRedialPhase('RINGING');
+    setRedialDuration(0);
+    setIsRedialMuted(false);
+    setIsRedialHeld(false);
+    setRedialLiveTranscript([
+      { speaker: 'AI', text: `Initiating PSTN dialer link to ${p.customerPhone || '+1 (555) 234-8899'}...`, time: '00:00' }
+    ]);
+
+    // Update table status and count immediately
+    setPayments(prev => prev.map(item => item.id === p.id ? {
+      ...item,
+      reminderCallCount: (item.reminderCallCount || 0) + 1,
+      status: 'CALL_ANSWERED',
+      callTime: 'Just Now'
+    } : item));
+
+    // Call Backend API
+    try {
+      fetch('http://localhost:4000/api/v1/telephony/redial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: p.id,
+          customerName: p.customerName,
+          customerPhone: p.customerPhone,
+          amount: p.amount,
+          purpose: p.purpose
+        })
+      }).catch(() => {});
+    } catch (e) {}
+
+    setTlActionToast(`Dialing ${p.customerName} (${p.customerPhone || '+1 (555) 234-8899'}) via Twilio PSTN...`);
+  };
+
+  // Open Audio Player Modal with full Speech Transcript
+  const handleOpenAudioPlayer = (p: any) => {
+    setActiveAudioPlayerModal(p);
+    setAudioIsPlaying(false);
+    setAudioCurrentTime(0);
+    setAudioDuration(p.callDurationSecs || 42);
+
+    const defaultTranscript = [
+      { speaker: 'AI' as const, time: '00:02', text: `Hello ${p.customerName || 'Customer'}, this is FORGE INDIA automated payment desk. We noticed your payment of $${p.amount} is awaiting completion.` },
+      { speaker: 'CUSTOMER' as const, time: '00:11', text: 'Hello! Yes, my card OTP was delayed earlier on the payment gateway.' },
+      { speaker: 'AI' as const, time: '00:20', text: 'No problem at all! I have generated and sent a fresh 30-minute dynamic checkout link directly to your WhatsApp and SMS.' },
+      { speaker: 'CUSTOMER' as const, time: '00:32', text: 'Got the WhatsApp ping just now with the link. Opening it right away.' },
+      { speaker: 'AI' as const, time: '00:38', text: 'Excellent. Our gateway will instantly credit your account upon settlement. Have a great day!' }
+    ];
+    setAudioTranscript(defaultTranscript);
+
+    // Fetch from Backend API
+    try {
+      fetch(`http://localhost:4000/api/v1/telephony/recordings/${p.id}`)
+        .then(res => res.json())
+        .then(json => {
+          if (json.success && json.data) {
+            if (json.data.callDurationSecs) setAudioDuration(json.data.callDurationSecs);
+            if (json.data.waveform) setAudioWaveform(json.data.waveform);
+            if (json.data.transcript) setAudioTranscript(json.data.transcript);
+          }
+        })
+        .catch(() => {});
+    } catch (e) {}
+
+    setTlActionToast(`Loaded call recording and speech transcript for ${p.id} (${p.customerName}).`);
+  };
+
+  // Supervisor Audit Log Export (CSV) for Telephony Voice Redial Sessions
+  const handleExportVoiceAuditCsv = () => {
+    fetch('http://localhost:4000/api/v1/telephony/audit-export?format=csv')
+      .then(res => {
+        if (!res.ok) throw new Error('API offline');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Supervisor_Telephony_Voice_Audit_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setTlActionToast('Downloaded Supervisor Telephony Voice Audit Log (.CSV)!');
+      })
+      .catch(() => {
+        const headers = ['Txn_ID', 'Customer_Name', 'Phone', 'Purpose', 'Amount', 'Reminders_Placed', 'Call_Status', 'Dialer_Agent', 'Last_Call_Time', 'Supervisor_Audited'];
+        const rows = payments.map(p => [
+          p.id,
+          p.customerName || 'Registered Vendor',
+          p.customerPhone || '+1 (555) 234-8899',
+          p.purpose || 'Payment Reminder',
+          typeof p.amount === 'number' ? `$${p.amount.toFixed(2)}` : p.amount,
+          (p.reminderCallCount || 0).toString(),
+          p.status || 'CALL_ANSWERED',
+          p.dialerAgent || 'AI-VOICE-004 (Twilio PSTN Gateway)',
+          p.callTime || 'Today',
+          'YES (Sarah Connor - QUERIES_TL)'
+        ]);
+        downloadReportCsv(`Supervisor_Telephony_Voice_Audit_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+        setTlActionToast('Downloaded Supervisor Telephony Voice Audit Log (.CSV)!');
+      });
+  };
+
+  // Supervisor Audit Certificate Export (PDF) for Telephony Sessions
+  const handleExportVoiceAuditPdf = () => {
+    fetch('http://localhost:4000/api/v1/analytics/reports/pdf?type=TELEPHONY')
+      .then(res => {
+        if (!res.ok) throw new Error('API offline');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Supervisor_Telephony_Voice_Audit_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setTlActionToast('Downloaded Supervisor Telephony Official PDF Audit Certificate!');
+      })
+      .catch(() => {
+        const reportContent = `=================================================================\n` +
+          `ENTERPRISE AI WORKFORCE SAAS PLATFORM - SUPERVISOR TELEPHONY AUDIT\n` +
+          `Department: Operations Oversight (Payment & Telephony Desk)\n` +
+          `Supervisor Officer: Sarah Connor (QUERIES_TL) / Marcus Brody (PAYMENT_TL)\n` +
+          `Cryptographic Signature: SHA256:7f8e9102ab88c01d44ef1923e\n` +
+          `Generated: ${new Date().toLocaleString()}\n` +
+          `=================================================================\n\n` +
+          `OUTBOUND AI VOICE DIALER & REDIAL SESSIONS AUDIT:\n` +
+          `-----------------------------------------------------------------\n` +
+          payments.map(p => `• ID: ${p.id} | Customer: ${p.customerName} (${p.customerPhone || 'N/A'}) | Amount: $${p.amount} | Calls: ${p.reminderCallCount || 1} | Status: ${p.status} | Agent: ${p.dialerAgent || 'AI-VOICE-004'}`).join('\n') +
+          `\n\n=================================================================\n` +
+          `ALL OUTBOUND REDIAL TRANSACTIONS AUDITED AND COMPLIANT WITH TRAI / FCC REGULATIONS\n` +
+          `=================================================================`;
+        const blob = new Blob([reportContent], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Supervisor_Telephony_Voice_Audit_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setTlActionToast('Downloaded Supervisor Telephony Official PDF Audit Certificate!');
+      });
+  };
+
   // Dynamic Payment Settings State
   const [paymentSettings, setPaymentSettings] = useState<{
     slaWindowMinutes: number;
@@ -2711,7 +3048,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         customerPhone: '+91 98450 11234',
                         customerRole: 'Enterprise Vendor Partner',
                         transferredBy: 'Alex Vance (Senior Query Specialist)',
-                        reason: 'Customer requested $1,200 fee refund override (> $1,000 policy limit). Requires Supervisor Approval.',
+                        reason: 'Customer requested billing adjustment dispute. Requires Supervisor Review per No-Refund Terms.',
                         sentiment: 'URGENT',
                         status: 'RINGING'
                       });
@@ -2908,13 +3245,15 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   <button
                     className="btn btn-primary"
                     onClick={() => {
+                      const custName = activeIncomingTransferredCall.customerName;
                       setActiveIncomingTransferredCall({
                         ...activeIncomingTransferredCall,
                         status: 'IN_CALL'
                       });
-                      setTlActionToast(`Connected to Live PSTN Telephony Call with ${activeIncomingTransferredCall.customerName}. Softphone active.`);
+                      setTlActionToast(`Connected to Live PSTN Telephony Call with ${custName}. Softphone active in Inbound Calls.`);
+                      if (onSelectSubTab) onSelectSubTab('INBOUND_CALLS');
                     }}
-                    style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', fontSize: '0.8rem', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)' }}
+                    style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', fontSize: '0.8rem', padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.45)', cursor: 'pointer' }}
                   >
                     <PhoneCall size={16} /> Accept & Attend Call
                   </button>
@@ -3077,7 +3416,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         id: activeIncomingTransferredCall.ticketId,
                         customer: activeIncomingTransferredCall.customerName,
                         amount: '$1,200',
-                        policyName: 'Max Human Fee Refund Cap ($1,000)',
+                        policyName: 'Strict No-Refund Policy & Billing Review',
                         requestedBy: activeIncomingTransferredCall.transferredBy
                       });
                     }}
@@ -3352,7 +3691,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     resolvedToday: 8,
                     aht: '4.1m',
                     csat: '4.90',
-                    currentTask: 'Resolving TCK-8821 (Sophia Chen - Refund Policy)'
+                    currentTask: 'Resolving TCK-8821 (Sophia Chen - Terms & Non-Refundable Policy)'
                   },
                   {
                     id: 'AGT-QRY-03',
@@ -3614,7 +3953,11 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
           )}
 
           {/* SUBTAB 2: MULTI-CHANNEL COMMUNICATIONS CENTER (ENTERPRISE OMNICHANNEL OPERATIONS DESK) */}
-          {activeSubTab === 'CHANNELS' && (
+          {(activeSubTab === 'CHANNELS' ||
+            activeSubTab === 'LIVE_CHAT' ||
+            activeSubTab === 'INBOUND_CALLS' ||
+            activeSubTab === 'EMAIL_INBOX' ||
+            activeSubTab === 'WHATSAPP') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -3657,6 +4000,26 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   </button>
                 </div>
               </div>
+
+              {/* Omnichannel Supervisor Desk Suite (Live Chat, Inbound Calls, Email Inbox, WhatsApp) */}
+              <OmnichannelDeskSuite
+                initialChannel={
+                  activeSubTab === 'INBOUND_CALLS'
+                    ? 'INBOUND_CALLS'
+                    : activeSubTab === 'EMAIL_INBOX'
+                    ? 'EMAIL_INBOX'
+                    : activeSubTab === 'WHATSAPP'
+                    ? 'WHATSAPP'
+                    : 'LIVE_CHAT'
+                }
+                userRole="QUERIES_TL"
+                agentName="Sarah Jenkins (Queries Lead)"
+                agentStatus="Supervisor Live"
+                isSupervisorMode={true}
+                onTicketCreate={(t) => {
+                  setTlActionToast(`Team Lead escalated & created ticket for ${t.customer} (${t.channel})`);
+                }}
+              />
 
               {/* 5 Channel Ingestion Health Telemetry Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.85rem' }}>
@@ -4246,9 +4609,31 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   >
                     {/* 1. Ticket ID */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.82rem', color: '#0284c7' }}>
+                      <button
+                        onClick={() => {
+                          const targetChannel = getChannelForTicket(t);
+                          setTlActionToast(`Routing Ticket ${t.id} (${t.customerName}) to ${targetChannel.replace('_', ' ')} desk...`);
+                          if (onSelectSubTab) onSelectSubTab(targetChannel);
+                        }}
+                        style={{
+                          background: 'rgba(2, 132, 199, 0.12)',
+                          border: '1px solid rgba(2, 132, 199, 0.3)',
+                          padding: '0.2rem 0.45rem',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontFamily: 'monospace',
+                          fontWeight: 800,
+                          fontSize: '0.82rem',
+                          color: '#0284c7',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={`Click to open ticket in ${getChannelForTicket(t).replace('_', ' ')} workspace`}
+                      >
                         {t.id}
-                      </span>
+                      </button>
                       <TicketVisionButton
                         ticket={{
                           id: t.id,
@@ -4385,19 +4770,19 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
                       <code style={{ color: 'var(--text-brand)' }}>TCK-8821</code>
-                      <strong style={{ fontSize: '0.85rem' }}>David Miller — Refund Limit Policy Override</strong>
+                      <strong style={{ fontSize: '0.85rem' }}>David Miller — Commercial Invoice Billing Dispute</strong>
                       <span className="badge badge-danger">HIGH PRIORITY</span>
                     </div>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-                      Customer requested urgent $1,200.00 refund. Matched Policy SOP: Max autonomous limit is $1,000. Requires Team Lead e-signature approval.
+                      Customer requested billing adjustment for $1,200.00. Enforced Platform No-Refund Policy: Transaction is final; requires Team Lead review for commercial settlement.
                     </p>
                   </div>
                   <button
                     className="btn btn-primary"
-                    onClick={() => setSelectedTicket({ id: 'TCK-8821', ticketNumber: 'TCK-8821', userName: 'David Miller', initialQuery: 'Requesting refund of $1,200 for order #INV-881.' })}
+                    onClick={() => setSelectedTicket({ id: 'TCK-8821', ticketNumber: 'TCK-8821', userName: 'David Miller', initialQuery: 'Review billing adjustment for order #INV-881 per No-Refund terms.' })}
                     style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
                   >
-                    Override & Approve Refund
+                    Review Billing Dispute
                   </button>
                 </div>
 
@@ -4906,8 +5291,8 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                               onClick={() => setInspectReasoningModal({
                                 agentId: 'AGT-Q102',
                                 agentName: 'AI Voice Bot Agent',
-                                systemPrompt: 'Diarize PSTN audio stream and extract customer intent. Detect financial refund triggers.',
-                                vectorContext: 'Audio Transcript Chunk: Customer requested $1,200 refund. Matched refund threshold rule > $1,000.',
+                                systemPrompt: 'Diarize PSTN audio stream and extract customer intent. Detect financial dispute triggers and enforce No-Refund terms.',
+                                vectorContext: 'Audio Transcript Chunk: Customer inquired about billing dispute. Matched No-Refund platform policy SOP.',
                                 candidateTool: 'ApiService.triggerSlaEscalation({ ticketId: "TCK-8821" })',
                                 confidenceScore: 98.1
                               })}
@@ -5109,7 +5494,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         </td>
                         <td style={{ padding: '0.85rem 0.85rem', verticalAlign: 'middle' }}>
                           <span style={{ color: 'var(--text-main)', fontSize: '0.78rem' }}>
-                            Monitoring refund requests over $1,000 threshold
+                            Enforcing No-Refund policy on dispute tickets over $1,000
                           </span>
                         </td>
                         <td style={{ padding: '0.85rem 0.85rem', verticalAlign: 'middle' }}>
@@ -5161,7 +5546,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                               onClick={() => setInspectReasoningModal({
                                 agentId: 'AGT-Q104',
                                 agentName: 'Escalation & SLA Sentinel Agent',
-                                systemPrompt: 'Enforce maximum autonomous limits. Any refund over $1,000 requires Team Lead authorization.',
+                                systemPrompt: 'Enforce maximum autonomous limits and strict No-Refund policy. Any dispute exceeding $1,000 requires Team Lead authorization.',
                                 vectorContext: 'Policy SOP #402: Auto-freeze transaction and trigger Team Lead ping.',
                                 candidateTool: 'ApiService.triggerSupervisorHandoff({ supervisor: "Sarah Connor" })',
                                 confidenceScore: 99.1
@@ -5184,9 +5569,9 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                               onClick={() => setInspectSummaryModal({
                                 agentId: 'AGT-Q104',
                                 customerName: 'David Miller',
-                                summary: 'Policy Sentinel identified $1,200 refund exceeding $1,000 threshold. Transferred to Sarah Connor with handover note.',
+                                summary: 'Policy Sentinel identified $1,200 commercial dispute on final transaction. Transferred to Sarah Connor with handover note.',
                                 sentiment: 'FRUSTRATED',
-                                transcript: 'Sentinel Log: Refund amount $1,200 exceeds threshold $1,000. Escalation generated.'
+                                transcript: 'Sentinel Log: Enforced No-Refund policy on $1,200 transaction dispute. Escalation generated.'
                               })}
                               style={{
                                 background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
@@ -5677,7 +6062,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.72rem' }}>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <strong>Refund Threshold Policy Block (&gt; $1,000)</strong>
+                        <strong>Billing Discrepancy Policy Exception (&gt; $1,000)</strong>
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Financial control exception required</div>
                       </div>
                       <span className="badge badge-danger">42% (31 Cases)</span>
@@ -5755,7 +6140,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   </h5>
                   <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.45rem 0.6rem', borderRadius: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Refund Threshold Policy</strong> <span style={{ color: 'var(--text-brand)' }}>38%</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Billing & Dispute Policy</strong> <span style={{ color: 'var(--text-brand)' }}>38%</span></div>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>486 Tickets • +5% trend</div>
                     </div>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.45rem 0.6rem', borderRadius: '4px' }}>
@@ -5905,9 +6290,31 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   >
                     {/* 1. Ticket ID */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.82rem', color: '#0284c7' }}>
+                      <button
+                        onClick={() => {
+                          const targetChannel = getChannelForTicket(t);
+                          setTlActionToast(`Routing Ticket ${t.id} (${t.customerName}) to ${targetChannel.replace('_', ' ')} desk...`);
+                          if (onSelectSubTab) onSelectSubTab(targetChannel);
+                        }}
+                        style={{
+                          background: 'rgba(2, 132, 199, 0.12)',
+                          border: '1px solid rgba(2, 132, 199, 0.3)',
+                          padding: '0.2rem 0.45rem',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontFamily: 'monospace',
+                          fontWeight: 800,
+                          fontSize: '0.82rem',
+                          color: '#0284c7',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={`Click to open ticket in ${getChannelForTicket(t).replace('_', ' ')} workspace`}
+                      >
                         {t.id}
-                      </span>
+                      </button>
                       <TicketVisionButton
                         ticket={{
                           id: t.id,
@@ -6398,7 +6805,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-emerald)', fontSize: '1.1rem' }}></div>
                     <div>
                       <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Vector RAG Answer Delivered for TCK-8821</strong>
-                      <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>Customer: <strong>Sophia Chen</strong> • Cosine Match: <span style={{ color: 'var(--text-emerald)', fontWeight: 700 }}>99.4%</span> • Category: Refund Policy</p>
+                      <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>Customer: <strong>Sophia Chen</strong> • Cosine Match: <span style={{ color: 'var(--text-emerald)', fontWeight: 700 }}>99.4%</span> • Category: Terms & Non-Refundable Policy</p>
                     </div>
                   </div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--bg-dark)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>10:14:03 AM</span>
@@ -6409,7 +6816,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-brand)', fontSize: '1.1rem' }}></div>
                     <div>
                       <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Team Lead Sarah Connor Approved Exception Override</strong>
-                      <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>Ticket: <strong>TCK-8820</strong> • Refund Amount: <strong style={{ color: 'var(--text-emerald)' }}>$1,250.00</strong> • Status: Executive Approval Granted</p>
+                      <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>Ticket: <strong>TCK-8820</strong> • Disputed Amount: <strong style={{ color: 'var(--text-emerald)' }}>$1,250.00</strong> • Status: Executive Approval Granted</p>
                     </div>
                   </div>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--bg-dark)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>10:08:12 AM</span>
@@ -6471,7 +6878,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                       <td><code>AUD-9021</code></td>
                       <td>2026-08-04 10:08:12</td>
                       <td><strong>Sarah Connor</strong> <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>(QUERIES_TL)</span></td>
-                      <td>Refund Threshold Override ($1,250.00)</td>
+                      <td>Billing Settlement Override ($1,250.00)</td>
                       <td><div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}><code>TCK-8820</code> <TicketVisionButton ticket={{ id: 'TCK-8820', ticketNumber: 'TCK-8820', customerName: 'David Miller', departmentLabel: 'Queries TL', status: 'IN_PROGRESS' }} compact size="sm" /></div></td>
                       <td><code>192.168.1.45</code></td>
                       <td><span className="badge badge-success">COMPLIANT_PASSED</span></td>
@@ -6992,7 +7399,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     <span className="badge badge-success">ACTIVE</span>
                   </div>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.74rem' }}>
-                    Cosine similarity threshold updated to 99.4%. Knowledge base re-indexed with latest refund policies.
+                    Cosine similarity threshold updated to 99.4%. Knowledge base re-indexed with latest No-Refund terms and customer SLAs.
                   </p>
                 </div>
               </div>
@@ -7050,7 +7457,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                 <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.78rem' }}>
                   <div><strong>Assigned Department:</strong> <span style={{ color: 'var(--text-brand)' }}>Customer Queries Department</span></div>
                   <div><strong>Shift Schedule:</strong> Morning Operational Shift (08:00 AM - 05:00 PM EST)</div>
-                  <div><strong>Manager Authorization Scope:</strong> Level 3 Ticket Override & Refund Approval</div>
+                  <div><strong>Manager Authorization Scope:</strong> Level 3 Ticket Override & Billing Dispute Settlement</div>
                   <div><strong>Department API Key:</strong> <code>qry_sec_key_88102****</code></div>
                 </div>
               </div>
@@ -7138,6 +7545,34 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
       {/* KYC TEAM LEAD DESK (RESPONSIBILITY: DOCUMENT VERIFICATION, OCR REVIEW, IMAGE QUALITY, FRAUD DETECTION, DUPLICATE DETECTION, CRIMINAL VERIFICATION, APPROVAL WORKFLOW, REJECTION WORKFLOW, COMPLIANCE, SLA) */}
       {(role === UserRole.KYC_TL || (role as string) === 'KYC_TL') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+          {/* KYC TL: MULTI-CHANNEL & WORKFLOWS (LIVE CHAT, INBOUND CALLS, EMAIL INBOX, WHATSAPP) */}
+          {(activeSubTab === 'CHANNELS' ||
+            activeSubTab === 'LIVE_CHAT' ||
+            activeSubTab === 'INBOUND_CALLS' ||
+            activeSubTab === 'EMAIL_INBOX' ||
+            activeSubTab === 'WHATSAPP') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <OmnichannelDeskSuite
+                initialChannel={
+                  activeSubTab === 'INBOUND_CALLS'
+                    ? 'INBOUND_CALLS'
+                    : activeSubTab === 'EMAIL_INBOX'
+                    ? 'EMAIL_INBOX'
+                    : activeSubTab === 'WHATSAPP'
+                    ? 'WHATSAPP'
+                    : 'LIVE_CHAT'
+                }
+                userRole={role}
+                agentName="Elena Vance (KYC Lead)"
+                agentStatus="Active Supervisor"
+                isSupervisorMode={true}
+                onTicketCreate={(t) => {
+                  setTlActionToast(`Created KYC support ticket for ${t.customer} (${t.channel})`);
+                }}
+              />
+            </div>
+          )}
           
           {/* Header Banner - ONLY SHOW ON MAIN OVERVIEW / DASHBOARD TAB */}
           {(!activeSubTab || activeSubTab === 'OVERVIEW' || activeSubTab === 'KPIS' || activeSubTab === 'GLOBAL_OVERVIEW') && (
@@ -12293,15 +12728,43 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
       {/* PAYMENT TEAM LEAD DESK (RESPONSIBILITY: REGISTRATION PAYMENTS, PAYMENT VERIFICATION, RECEIPTS, INVOICES, REFUND WORKFLOW, REFERRAL COMMISSION, REMINDER CALLS, RECONCILIATION, SLA) */}
       {role === UserRole.PAYMENT_TL && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+          {/* PAYMENT TL: MULTI-CHANNEL & WORKFLOWS (LIVE CHAT, INBOUND CALLS, EMAIL INBOX, WHATSAPP) */}
+          {(activeSubTab === 'CHANNELS' ||
+            activeSubTab === 'LIVE_CHAT' ||
+            activeSubTab === 'INBOUND_CALLS' ||
+            activeSubTab === 'EMAIL_INBOX' ||
+            activeSubTab === 'WHATSAPP') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <OmnichannelDeskSuite
+                initialChannel={
+                  activeSubTab === 'INBOUND_CALLS'
+                    ? 'INBOUND_CALLS'
+                    : activeSubTab === 'EMAIL_INBOX'
+                    ? 'EMAIL_INBOX'
+                    : activeSubTab === 'WHATSAPP'
+                    ? 'WHATSAPP'
+                    : 'LIVE_CHAT'
+                }
+                userRole={role}
+                agentName="Marcus Vance (Payment Lead)"
+                agentStatus="Active Supervisor"
+                isSupervisorMode={true}
+                onTicketCreate={(t) => {
+                  setTlActionToast(`Created Payment support ticket for ${t.customer} (${t.channel})`);
+                }}
+              />
+            </div>
+          )}
           
           {/* Header Banner */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '10px', borderLeft: '4px solid var(--text-emerald)', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '10px', borderLeft: '4px solid var(--text-main)', border: '1px solid var(--border-color)' }}>
             <div>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-emerald)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <CreditCard size={26} /> Payment Department Operations Manager Dashboard (TL)
+              <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <CreditCard size={26} style={{ color: 'var(--text-main)' }} /> Payment Department Operations Manager Dashboard (TL)
               </h1>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', margin: '0.3rem 0 0 0' }}>
-                Manager: <strong>Elena Vance (Head of Treasury & Billing Ops)</strong> • Workforce: <strong>Stripe Core, Razorpay G2C, Auto-Billing & AI Voice Dialer</strong> • Active Subtab: <strong style={{ color: 'var(--text-emerald)' }}>{activeSubTab ? activeSubTab.replace(/_/g, ' ') : 'OVERVIEW'}</strong>
+                Manager: <strong>Elena Vance (Head of Treasury & Billing Ops)</strong> • Workforce: <strong>Stripe Core, Razorpay G2C, Auto-Billing & AI Voice Dialer</strong> • Active Subtab: <strong style={{ color: 'var(--text-main)' }}>{activeSubTab ? activeSubTab.replace(/_/g, ' ') : 'OVERVIEW'}</strong>
               </p>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -12318,22 +12781,40 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
             <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
                 <div>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-cyan)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     Outbound AI Voice Dialer & Payment Reminder Call Logs
                   </h4>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
                     Automated PSTN voice reminder call logs for pending registration fees, unpaid invoices, and renewal notices.
                   </p>
                 </div>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setTlActionToast('Initiated Outbound AI Voice Campaign for 14 Pending Collections.');
-                  }}
-                  style={{ fontSize: '0.75rem' }}
-                >
-                  Launch AI Voice Campaign
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleExportVoiceAuditCsv}
+                    style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Download complete call logs and session metadata as CSV"
+                  >
+                    <Download size={13} /> Export Voice Calls (.CSV)
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleExportVoiceAuditPdf}
+                    style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                    title="Download cryptographically signed supervisor audit certificate"
+                  >
+                    <FileText size={13} /> Audit Certificate (.PDF)
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setTlActionToast('Initiated Outbound AI Voice Campaign for 14 Pending Collections.');
+                    }}
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    Launch AI Voice Campaign
+                  </button>
+                </div>
               </div>
 
               <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -12352,22 +12833,79 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   <tbody>
                     {payments.map(p => (
                       <tr key={p.id}>
-                        <td><code>{p.id}</code></td>
-                        <td><strong>{p.customerName || 'Registered Vendor'}</strong></td>
-                        <td>{p.purpose}</td>
-                        <td><strong style={{ color: 'var(--text-emerald)' }}>${p.amount}</strong></td>
-                        <td><span className="badge badge-info">{p.reminderCallCount} Call(s) Made</span></td>
-                        <td><span className="badge badge-success">{p.status}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <code>{p.id}</code>
+                            <TicketVisionButton
+                              ticket={{
+                                id: p.id,
+                                ticketNumber: p.id,
+                                customerName: p.customerName || 'Registered Vendor',
+                                departmentLabel: 'Payment Operations',
+                                status: p.status,
+                                amount: `$${typeof p.amount === 'number' ? p.amount.toFixed(2) : p.amount}`
+                              }}
+                              compact
+                              size="sm"
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <strong>{p.customerName || 'Registered Vendor'}</strong>
+                          {p.customerPhone && (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{p.customerPhone}</div>
+                          )}
+                        </td>
+                        <td>
+                          <div>{p.purpose}</div>
+                          {p.dialerAgent && (
+                            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>via {p.dialerAgent}</div>
+                          )}
+                        </td>
+                        <td><strong style={{ color: 'var(--text-emerald)' }}>${typeof p.amount === 'number' ? p.amount.toFixed(2) : p.amount}</strong></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <PhoneCall size={12} style={{ color: '#0284c7' }} />
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                              {p.reminderCallCount} Call(s) Made
+                            </span>
+                          </div>
+                          {p.callDuration && (
+                            <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Duration: {p.callDuration}</div>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`badge ${
+                            p.status === 'PAYMENT_SETTLED' || p.status === 'CALL_COMPLETED' ? 'badge-success' :
+                            p.status === 'EXPIRED_ESCALATED' ? 'badge-danger' :
+                            p.status === 'RETRY_PENDING' ? 'badge-warning' : 'badge-info'
+                          }`} style={{ borderRadius: '9999px', border: 'none', padding: '0.22rem 0.65rem' }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+                            {p.status.replace(/_/g, ' ')}
+                          </span>
+                          {p.callTime && (
+                            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{p.callTime}</div>
+                          )}
+                        </td>
                         <td style={{ textAlign: 'right' }}>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() => {
-                              setTlActionToast(`Triggered Immediate Retry Call for ${p.id}...`);
-                            }}
-                            style={{ fontSize: '0.62rem', padding: '0.2rem 0.45rem' }}
-                          >
-                            Redial Now
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleTriggerRedial(p)}
+                              style={{ fontSize: '0.65rem', padding: '0.22rem 0.55rem', fontWeight: 800, background: '#0284c7', borderColor: '#0284c7', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                              title="Trigger Outbound AI Voice Redial Call"
+                            >
+                              <PhoneCall size={12} /> Redial Now
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => handleOpenAudioPlayer(p)}
+                              style={{ fontSize: '0.65rem', padding: '0.22rem 0.55rem', fontWeight: 700, color: 'var(--text-cyan)', borderColor: 'var(--text-cyan)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                              title="Play Call Recording & View Speech Transcript"
+                            >
+                              <Play size={12} /> Audio
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -12424,13 +12962,40 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                       .filter(p => p.paymentStatus === paymentQueueFilter)
                       .map(item => (
                         <tr key={item.id}>
-                          <td><code>{item.registrationId}</code></td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <code>{item.registrationId}</code>
+                              <TicketVisionButton
+                                ticket={{
+                                  id: item.id || item.registrationId,
+                                  ticketNumber: item.registrationId,
+                                  customerName: item.customerName,
+                                  departmentLabel: 'Payment Operations',
+                                  status: item.paymentStatus,
+                                  isEscalated: item.paymentStatus === 'FAILED_PAYMENT',
+                                  amount: item.paymentAmount
+                                }}
+                                compact
+                                size="sm"
+                              />
+                            </div>
+                          </td>
                           <td><strong>{item.customerName}</strong><br/><span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{item.applicantType}</span></td>
                           <td><strong style={{ color: 'var(--text-emerald)', fontSize: '0.85rem' }}>{item.paymentAmount}</strong></td>
-                          <td><span className={`badge ${item.paymentStatus === 'PAYMENT_COMPLETED' ? 'badge-success' : item.paymentStatus === 'FAILED_PAYMENT' ? 'badge-danger' : 'badge-warning'}`}>{item.paymentStatus}</span></td>
+                          <td>
+                            <span className={`badge ${item.paymentStatus === 'PAYMENT_COMPLETED' ? 'badge-success' : item.paymentStatus === 'FAILED_PAYMENT' ? 'badge-danger' : 'badge-warning'}`} style={{ borderRadius: '9999px', border: 'none', padding: '0.22rem 0.65rem' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+                              {item.paymentStatus.replace(/_/g, ' ')}
+                            </span>
+                          </td>
                           <td style={{ fontSize: '0.72rem' }}>{item.paymentMethod}</td>
                           <td style={{ fontSize: '0.72rem', color: 'var(--text-brand)' }}>{item.aiStatus}</td>
-                          <td><span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>{item.reminderCount} Call(s) Made</span></td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <PhoneCall size={12} style={{ color: 'var(--text-muted)' }} />
+                              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)' }}>{item.reminderCount} Call(s) Made</span>
+                            </div>
+                          </td>
                           <td style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.currentWorkflow}</td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
@@ -12983,7 +13548,23 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                           <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
                             {activeCase.name}
                           </h3>
-                          <code style={{ fontSize: '0.8rem', color: 'var(--text-brand)', fontWeight: 800 }}>{activeCase.id}</code>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <code style={{ fontSize: '0.8rem', color: 'var(--text-brand)', fontWeight: 800 }}>{activeCase.id}</code>
+                            <TicketVisionButton
+                              ticket={{
+                                id: activeCase.id,
+                                ticketNumber: activeCase.id,
+                                customerName: activeCase.name,
+                                departmentLabel: 'Payment AI Pipeline',
+                                status: activeCase.overallStatus,
+                                isEscalated: activeCase.overallStatus === 'ESCALATED',
+                                amount: activeCase.amount,
+                                customerPhone: activeCase.phone
+                              }}
+                              compact
+                              size="sm"
+                            />
+                          </div>
                           <span className={`badge ${activeCase.overallStatus === 'COMPLETED' ? 'badge-success' : activeCase.overallStatus === 'ESCALATED' ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '0.62rem' }}>
                             {activeCase.overallStatus}
                           </span>
@@ -13218,7 +13799,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 
                 {/* 1. TOP HEADER DESK */}
-                <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', border: '1.5px solid #0284c7', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       Individual Agent Wallets, Commission Calculations & Payouts Console
@@ -13236,51 +13817,59 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
                   
                   {/* Tier 1: Pincode */}
-                  <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1.5px solid #0284c7' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="badge badge-primary" style={{ fontSize: '0.62rem' }}>PINCODE AGENTS</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-cyan)', fontWeight: 800 }}>₹150 / referral</span>
+                  <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #4f46e5, #6366f1)' } as React.CSSProperties}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-kpi-title, var(--text-main))', letterSpacing: '-0.01em' }}>PINCODE AGENTS</span>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 700 }}>₹150 / referral</span>
                     </div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-cyan)', marginTop: '0.35rem' }}>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                       ₹23,400.00
                     </div>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>156 Vendor Tie-ups × ₹150 (4 Agents)</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                      156 Vendor Tie-ups × ₹150 (4 Agents)
+                    </div>
                   </div>
 
                   {/* Tier 2: District */}
-                  <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1.5px solid #38bdf8' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="badge badge-info" style={{ fontSize: '0.62rem' }}>DISTRICT AGENTS</span>
-                      <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 800 }}>₹50 / referral</span>
+                  <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #4f46e5, #6366f1)' } as React.CSSProperties}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-kpi-title, var(--text-main))', letterSpacing: '-0.01em' }}>DISTRICT AGENTS</span>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 700 }}>₹50 / referral</span>
                     </div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#38bdf8', marginTop: '0.35rem' }}>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                       ₹19,750.00
                     </div>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>395 District Overrides × ₹50 (3 Agents)</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                      395 District Overrides × ₹50 (3 Agents)
+                    </div>
                   </div>
 
                   {/* Tier 3: Divisional */}
-                  <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1.5px solid #10b981' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="badge badge-success" style={{ fontSize: '0.62rem' }}>DIVISIONAL LEADS</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-emerald)', fontWeight: 800 }}>₹50 / referral</span>
+                  <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #4f46e5, #6366f1)' } as React.CSSProperties}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-kpi-title, var(--text-main))', letterSpacing: '-0.01em' }}>DIVISIONAL LEADS</span>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 700 }}>₹50 / referral</span>
                     </div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-emerald)', marginTop: '0.35rem' }}>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                       ₹27,000.00
                     </div>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>540 Divisional Overrides × ₹50 (2 Agents)</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                      540 Divisional Overrides × ₹50 (2 Agents)
+                    </div>
                   </div>
 
                   {/* Tier 4: State */}
-                  <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1.5px solid #a855f7' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="badge badge-primary" style={{ fontSize: '0.62rem', background: '#a855f7' }}>STATE HEADS</span>
-                      <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 800 }}>₹50 / referral</span>
+                  <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #4f46e5, #6366f1)' } as React.CSSProperties}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-kpi-title, var(--text-main))', letterSpacing: '-0.01em' }}>STATE HEADS</span>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 700 }}>₹50 / referral</span>
                     </div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#c084fc', marginTop: '0.35rem' }}>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                       ₹46,000.00
                     </div>
-                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>920 State Pool Shares × ₹50 (2 Agents)</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                      920 State Pool Shares × ₹50 (2 Agents)
+                    </div>
                   </div>
 
                 </div>
@@ -13412,45 +14001,55 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                                 <tr key={agent.agentId}>
                                   <td>
                                     <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)', display: 'block' }}>{agent.agentName}</strong>
-                                    <code style={{ fontSize: '0.7rem', color: 'var(--text-brand)' }}>{agent.agentId}</code>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                      <code style={{ fontSize: '0.7rem', color: 'var(--text-brand)' }}>{agent.agentId}</code>
+                                      <TicketVisionButton
+                                        ticket={{
+                                          id: req ? req.payoutId : agent.agentId,
+                                          ticketNumber: req ? req.payoutId : agent.agentId,
+                                          customerName: agent.agentName,
+                                          departmentLabel: 'Agent Commissions',
+                                          status: req ? req.status : 'ACTIVE',
+                                          amount: `₹${agent.currentWalletBalance.toFixed(2)}`
+                                        }}
+                                        compact
+                                        size="sm"
+                                      />
+                                    </div>
                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{agent.jurisdiction}</div>
                                   </td>
                                   <td>
-                                    <span className={`badge ${isPincode ? 'badge-primary' : isDistrict ? 'badge-info' : isDivisional ? 'badge-success' : 'badge-primary'}`} style={{ fontSize: '0.62rem', background: isState ? '#a855f7' : undefined }}>
+                                    <span className="badge badge-secondary" style={{ fontSize: '0.62rem', fontWeight: 600 }}>
                                       {agent.tierLabel}
                                     </span>
                                   </td>
                                   <td>
-                                    <span className="badge badge-secondary" style={{ fontSize: '0.68rem', fontWeight: 800, color: isPincode ? 'var(--text-cyan)' : '#38bdf8' }}>
+                                    <strong style={{ fontSize: '0.78rem', color: 'var(--text-main)' }}>
                                       ₹{agent.commissionPerReferral.toFixed(2)} / vendor
-                                    </span>
+                                    </strong>
                                   </td>
                                   <td>
                                     <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>{agent.successfulReferralsCount}</strong>
                                     <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block' }}>Vendors Onboarded</span>
                                   </td>
                                   <td>
-                                    <div style={{ background: 'var(--bg-dark)', padding: '0.35rem 0.55rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontFamily: 'monospace' }}>
-                                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{agent.calculationFormula}</span>
-                                      <strong style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-emerald)', marginTop: '0.1rem' }}>
-                                        = ₹{agent.lifetimeCommissionEarned.toFixed(2)}
-                                      </strong>
-                                    </div>
+                                    <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: 'var(--text-muted)' }}>{agent.calculationFormula}</div>
+                                    <strong style={{ display: 'block', fontSize: '0.84rem', color: 'var(--text-main)', marginTop: '0.15rem' }}>
+                                      = ₹{agent.lifetimeCommissionEarned.toFixed(2)}
+                                    </strong>
                                   </td>
                                   <td>
-                                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.35rem 0.55rem', borderRadius: '6px', border: '1px solid #10b981' }}>
-                                      <span style={{ fontSize: '0.58rem', color: 'var(--text-emerald)', fontWeight: 800 }}>LIVE WALLET</span>
-                                      <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--text-emerald)' }}>
-                                        ₹{agent.currentWalletBalance.toFixed(2)}
-                                      </strong>
-                                    </div>
+                                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>LIVE WALLET</div>
+                                    <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--text-main)', marginTop: '0.1rem' }}>
+                                      ₹{agent.currentWalletBalance.toFixed(2)}
+                                    </strong>
                                   </td>
                                   <td>
                                     {req ? (
                                       <div>
                                         <strong style={{ fontSize: '0.8rem', color: 'var(--text-brand)' }}>Req: ₹{req.requestedAmount.toFixed(2)}</strong>
                                         <div style={{ fontSize: '0.62rem', color: 'var(--text-rose)' }}>TDS 5%: -₹{req.tdsDeduction.toFixed(2)}</div>
-                                        <strong style={{ fontSize: '0.8rem', color: 'var(--text-emerald)', display: 'block' }}>Net: ₹{req.netPayable.toFixed(2)}</strong>
+                                        <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)', display: 'block' }}>Net: ₹{req.netPayable.toFixed(2)}</strong>
                                       </div>
                                     ) : (
                                       <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>No Active Request</span>
@@ -13458,14 +14057,14 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                                   </td>
                                   <td>
                                     {req ? (
-                                      <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid #a855f7' }}>
-                                        <span style={{ fontSize: '0.58rem', color: '#c084fc', fontWeight: 800 }}>REMAINING</span>
-                                        <strong style={{ display: 'block', fontSize: '0.85rem', color: '#c084fc' }}>
+                                      <div>
+                                        <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>REMAINING</div>
+                                        <strong style={{ display: 'block', fontSize: '0.88rem', color: 'var(--text-main)', marginTop: '0.1rem' }}>
                                           ₹{req.balanceAfterPayout.toFixed(2)}
                                         </strong>
                                       </div>
                                     ) : (
-                                      <span style={{ fontSize: '0.72rem', color: 'var(--text-emerald)' }}>₹{agent.currentWalletBalance.toFixed(2)}</span>
+                                      <span style={{ fontSize: '0.72rem', color: 'var(--text-main)' }}>₹{agent.currentWalletBalance.toFixed(2)}</span>
                                     )}
                                   </td>
                                   <td>
@@ -13500,9 +14099,11 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                                             setTlAgentWalletsList(prev => prev.map(a => a.agentId === agent.agentId ? { ...a, payoutRequest: { ...a.payoutRequest, status: 'REJECTED' } } : a));
                                             setTlActionToast(`Rejected payout claim for ${agent.agentName}.`);
                                           }}
-                                          style={{ fontSize: '0.62rem', padding: '0.2rem 0.4rem', color: 'var(--text-rose)', borderColor: 'var(--text-rose)' }}
+                                          style={{ fontSize: '0.62rem', padding: '0.2rem 0.45rem', color: 'var(--text-rose)', borderColor: 'var(--text-rose)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                          title="Reject Payout Claim"
                                         >
-                                                                                  </button>
+                                          <X size={11} /> Reject
+                                        </button>
                                       </div>
                                     ) : req?.status === 'DISBURSED' ? (
                                       <span className="badge badge-success" style={{ fontSize: '0.62rem' }}>Settled</span>
@@ -13800,13 +14401,16 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   Payment Live Activity Event Stream
                 </h3>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                  Real-time activity log capturing bank webhooks, UTR reconciliations, and Team Lead refund overrides.
+                  Real-time activity log capturing bank webhooks, UTR reconciliations, and Team Lead dispute settlement overrides.
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div style={{ background: 'var(--bg-surface)', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
-                  <span><strong>Team Lead Elena Vance</strong> approved UTR reconciliation override for <code>REG-9912</code>.</span>
+                <div style={{ background: 'var(--bg-surface)', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span><strong>Team Lead Elena Vance</strong> approved UTR reconciliation override for <code>REG-9912</code></span>
+                    <TicketVisionButton ticket={{ id: 'REG-9912', ticketNumber: 'REG-9912', customerName: 'Elena Vance', departmentLabel: 'Payment TL', status: 'RECONCILED' }} compact size="sm" />
+                  </div>
                   <span style={{ color: 'var(--text-muted)' }}>11:45 AM</span>
                 </div>
                 <div style={{ background: 'var(--bg-surface)', padding: '0.65rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
@@ -13826,7 +14430,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     Treasury Audit & Financial Compliance Ledger (Payment Ops Scoped)
                   </h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                    Immutable cryptographic audit log capturing payment overrides, refund approvals, and bank gateway credentials access.
+                    Immutable cryptographic audit log capturing payment overrides, dispute settlements, and bank gateway credentials access.
                   </p>
                 </div>
                 <span className="badge badge-danger">Payment Department Scoped Ledger</span>
@@ -13884,7 +14488,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                 <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.78rem' }}>
                   <div><strong>Assigned Department:</strong> <span style={{ color: 'var(--text-emerald)' }}>Payment Operations & Treasury Department</span></div>
                   <div><strong>Shift Schedule:</strong> Full Operational Shift (08:00 AM - 05:00 PM EST)</div>
-                  <div><strong>Manager Authorization Scope:</strong> Level 3 Refund Discrepancy & Batch Payout Authorization</div>
+                  <div><strong>Manager Authorization Scope:</strong> Level 3 Billing Discrepancy & Batch Payout Authorization</div>
                   <div><strong>Gateway API Key:</strong> <code>stripe_treasury_key_99812****</code></div>
                 </div>
               </div>
@@ -13896,7 +14500,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
             <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
                 <div>
-                  <h3 style={{ margin: 0, color: 'var(--text-emerald)', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h3 style={{ margin: 0, color: 'var(--accent-primary, #002b7f)', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     Payment Operational Settings & Gateway SLA Rules
                   </h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
@@ -13910,7 +14514,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   disabled={isSavingPaymentSettings}
                   style={{
                     padding: '0.45rem 1.15rem',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    background: '#002b7f',
                     color: '#fff',
                     fontWeight: 800,
                     borderRadius: '6px',
@@ -13969,7 +14573,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         className="form-control"
                         value={paymentSettings.stateAgentFee}
                         onChange={e => setPaymentSettings({ ...paymentSettings, stateAgentFee: Number(e.target.value) })}
-                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-emerald)' }}
+                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-main)' }}
                       />
                     </div>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
@@ -13979,7 +14583,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         className="form-control"
                         value={paymentSettings.districtAgentFee}
                         onChange={e => setPaymentSettings({ ...paymentSettings, districtAgentFee: Number(e.target.value) })}
-                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-emerald)' }}
+                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-main)' }}
                       />
                     </div>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
@@ -13989,7 +14593,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         className="form-control"
                         value={paymentSettings.divisionalAgentFee}
                         onChange={e => setPaymentSettings({ ...paymentSettings, divisionalAgentFee: Number(e.target.value) })}
-                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-emerald)' }}
+                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-main)' }}
                       />
                     </div>
                     <div style={{ background: 'var(--bg-surface)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
@@ -13999,7 +14603,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                         className="form-control"
                         value={paymentSettings.pincodeAgentFee}
                         onChange={e => setPaymentSettings({ ...paymentSettings, pincodeAgentFee: Number(e.target.value) })}
-                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-emerald)' }}
+                        style={{ width: '100%', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 700, color: 'var(--text-main)' }}
                       />
                     </div>
                   </div>
@@ -14061,7 +14665,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                     Payment Team Lead Escalation Queue
                   </h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                    High-priority failed payment verifications and UTR discrepancies requiring immediate Team Lead manual review or refund authorization.
+                    High-priority failed payment verifications and UTR discrepancies requiring immediate Team Lead manual review or dispute settlement authorization.
                   </p>
                 </div>
                 <span className="badge badge-danger">Payment Escalations Pending</span>
@@ -14124,7 +14728,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.6rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-emerald)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       Financial & Revenue Intelligence
                     </h4>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
@@ -14195,7 +14799,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.6rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-brand)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       Gateway Success, Links & Receipt Operations
                     </h4>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
@@ -14266,7 +14870,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.6rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-cyan)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       Human Workforce & Officer Shift Execution
                     </h4>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
@@ -14341,7 +14945,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.6rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-brand)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       AI Voice Dialer, Automation & SLA Performance
                     </h4>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
@@ -14508,7 +15112,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
               <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.6rem' }}>
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-brand)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       Detailed Financial Operations & Revenue Breakdown
                     </h4>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
@@ -16004,7 +16608,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                 rows={4}
                 value={broadcastMessageText}
                 onChange={(e) => setBroadcastMessageText(e.target.value)}
-                placeholder="e.g. Please expedite refund requests under $250.00 immediately without waiting for tier 2 escalation..."
+                placeholder="e.g. Please expedite billing dispute review requests under $250.00 immediately without waiting for tier 2 escalation..."
                 style={{ width: '100%', background: 'var(--bg-dark)', border: '1px solid var(--border-color)', color: 'var(--text-main)', padding: '0.6rem', borderRadius: '6px', fontSize: '0.76rem', resize: 'vertical' }}
               />
             </div>
@@ -16182,7 +16786,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                       <span style={{ color: 'var(--text-muted)' }}>13:10</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)' }}>
-                      <span>• Resolved inquiry regarding refund processing</span>
+                      <span>• Resolved inquiry regarding billing dispute settlement</span>
                       <span style={{ color: 'var(--text-muted)' }}>13:02</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)' }}>
@@ -17563,6 +18167,489 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
             </div>
           </div>
         </div>
+      )}
+
+      {/* 1. OUTBOUND AI REDIAL LIVE CALL CONSOLE MODAL */}
+      {activeRedialModal && typeof document !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999999,
+            padding: '1.5rem',
+            boxSizing: 'border-box'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveRedialModal(null);
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              background: 'var(--bg-surface)',
+              width: '680px',
+              maxWidth: '96vw',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '1.5rem',
+              borderRadius: '14px',
+              border: '1.5px solid #0284c7',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: redialPhase === 'RINGING' ? 'rgba(2, 132, 199, 0.2)' : redialPhase === 'BARGED_IN' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: redialPhase === 'RINGING' ? '#0284c7' : redialPhase === 'BARGED_IN' ? '#ef4444' : '#10b981' }}>
+                  <PhoneCall size={18} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Outbound AI Voice Dialer — Twilio PSTN Gateway
+                  </h4>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Session Ref: <code>{activeRedialModal.id}</code> • Dialer Engine: <strong>AI-VOICE-004</strong>
+                  </span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className={`badge ${redialPhase === 'CONNECTED' ? 'badge-success' : redialPhase === 'BARGED_IN' ? 'badge-danger' : redialPhase === 'RINGING' ? 'badge-info' : 'badge-secondary'}`}>
+                  {redialPhase === 'RINGING' ? 'RINGING...' : redialPhase === 'CONNECTED' ? `LIVE • ${String(Math.floor(redialDuration / 60)).padStart(2, '0')}:${String(redialDuration % 60).padStart(2, '0')}` : redialPhase === 'BARGED_IN' ? 'TL BARGE-IN ACTIVE' : 'CALL ENDED'}
+                </span>
+                <button
+                  onClick={() => setActiveRedialModal(null)}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.35rem 0.6rem' }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Customer Details Strip */}
+            <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', fontSize: '0.72rem' }}>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>CUSTOMER / ENTITY</span>
+                <strong style={{ color: 'var(--text-main)' }}>{activeRedialModal.customerName}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>PSTN NUMBER</span>
+                <code style={{ color: 'var(--text-brand)' }}>{activeRedialModal.customerPhone || '+1 (555) 234-8899'}</code>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>PAYMENT PURPOSE</span>
+                <span style={{ color: 'var(--text-main)' }}>{activeRedialModal.purpose}</span>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>AMOUNT DUE</span>
+                <strong style={{ color: 'var(--text-emerald)', fontSize: '0.85rem' }}>${typeof activeRedialModal.amount === 'number' ? activeRedialModal.amount.toFixed(2) : activeRedialModal.amount}</strong>
+              </div>
+            </div>
+
+            {/* Live Audio Status / Ringing Pulse */}
+            <div style={{ background: 'rgba(2, 132, 199, 0.08)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid rgba(2, 132, 199, 0.4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: redialPhase === 'CONNECTED' ? '#10b981' : redialPhase === 'BARGED_IN' ? '#ef4444' : '#0284c7', boxShadow: '0 0 10px currentColor' }} />
+                <div>
+                  <strong style={{ fontSize: '0.78rem', color: 'var(--text-main)' }}>
+                    {redialPhase === 'RINGING' ? 'Connecting to Carrier Trunk & Ringing Handset...' :
+                     redialPhase === 'BARGED_IN' ? 'Team Lead Elena Vance speaking on line (Muted AI Engine)' :
+                     redialPhase === 'ENDED' ? 'Call Session Finalized & Logged to CRM' :
+                     'AI Outbound Dialer Connected (Audio 200 OK)'}
+                  </strong>
+                  <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>
+                    Sentiment: <strong style={{ color: '#10b981' }}>COOPERATIVE</strong> • Latency: 32ms • Codec: G.711u PSTN
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                {redialPhase === 'CONNECTED' && (
+                  <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '16px' }}>
+                    {[8, 14, 6, 16, 10, 15, 7].map((h, i) => (
+                      <span key={i} style={{ width: '3px', height: `${h}px`, background: '#10b981', borderRadius: '1px', display: 'inline-block' }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Live Conversation Transcript Feed */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                LIVE SPEECH-TO-TEXT STREAM (WHISPER AI ENGINE):
+              </span>
+              <div style={{ background: 'var(--bg-dark)', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0.85rem', maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {redialLiveTranscript.map((t, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-start' }}>
+                    <span className={`badge ${t.speaker === 'AI' ? 'badge-primary' : t.speaker === 'TL' ? 'badge-danger' : 'badge-secondary'}`} style={{ fontSize: '0.58rem', padding: '0.15rem 0.35rem' }}>
+                      {t.speaker}
+                    </span>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{t.time}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-main)', flex: 1 }}>{t.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Live Call Control Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <button
+                  className={`btn ${isRedialMuted ? 'btn-danger' : 'btn-secondary'}`}
+                  onClick={() => setIsRedialMuted(!isRedialMuted)}
+                  style={{ fontSize: '0.72rem', padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                >
+                  {isRedialMuted ? <MicOff size={13} /> : <Mic size={13} />} {isRedialMuted ? 'Unmute' : 'Mute Mic'}
+                </button>
+                <button
+                  className={`btn ${isRedialHeld ? 'btn-warning' : 'btn-secondary'}`}
+                  onClick={() => setIsRedialHeld(!isRedialHeld)}
+                  style={{ fontSize: '0.72rem', padding: '0.35rem 0.65rem' }}
+                >
+                  {isRedialHeld ? 'Resume Call' : 'Hold Call'}
+                </button>
+                {redialPhase === 'CONNECTED' && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setRedialPhase('BARGED_IN');
+                      setRedialLiveTranscript(prev => [
+                        ...prev,
+                        { speaker: 'TL', text: 'Hello, Team Lead Elena Vance here. I am following up on your payment link directly.', time: `00:${String(redialDuration).padStart(2, '0')}` }
+                      ]);
+                      setTlActionToast(`Team Lead Elena Vance barged into call with ${activeRedialModal.customerName}!`);
+                    }}
+                    style={{ fontSize: '0.72rem', padding: '0.35rem 0.65rem', borderColor: '#f59e0b', color: '#f59e0b' }}
+                  >
+                    Barge-In (TL Takeover)
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => {
+                    setRedialPhase('ENDED');
+                    setTlActionToast(`Call with ${activeRedialModal.customerName} ended. Call logged with status CALL_ANSWERED.`);
+                    setTimeout(() => setActiveRedialModal(null), 800);
+                  }}
+                  style={{ fontSize: '0.75rem', padding: '0.4rem 0.9rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <PhoneOff size={14} /> End Call & Save Log
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* 2. CALL RECORDING & AUDIO PLAYER MODAL */}
+      {activeAudioPlayerModal && typeof document !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999999,
+            padding: '1.5rem',
+            boxSizing: 'border-box'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setAudioIsPlaying(false);
+              try {
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+              } catch (err) {}
+              setActiveAudioPlayerModal(null);
+            }
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              background: 'var(--bg-surface)',
+              width: '720px',
+              maxWidth: '96vw',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              padding: '1.5rem',
+              borderRadius: '14px',
+              border: '1.5px solid var(--text-cyan)',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.85)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-cyan)' }}>
+                  <Volume2 size={18} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    PSTN Call Recording & Speech AI Audio Player
+                  </h4>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Call ID: <code>CA-{activeAudioPlayerModal.id.replace(/[^0-9]/g, '') || '992014881'}</code> • Gateway: <strong>Twilio Voice PSTN</strong>
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setAudioIsPlaying(false);
+                  try {
+                    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                  } catch (err) {}
+                  setActiveAudioPlayerModal(null);
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '0.35rem 0.6rem' }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Metadata strip */}
+            <div style={{ background: 'var(--bg-dark)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', fontSize: '0.72rem' }}>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>CUSTOMER</span>
+                <strong style={{ color: 'var(--text-main)' }}>{activeAudioPlayerModal.customerName}</strong>
+                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{activeAudioPlayerModal.customerPhone}</div>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>PURPOSE & AMOUNT</span>
+                <div>{activeAudioPlayerModal.purpose}</div>
+                <strong style={{ color: 'var(--text-emerald)' }}>${typeof activeAudioPlayerModal.amount === 'number' ? activeAudioPlayerModal.amount.toFixed(2) : activeAudioPlayerModal.amount}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>DIALER ENGINE</span>
+                <span style={{ color: 'var(--text-brand)' }}>{activeAudioPlayerModal.dialerAgent || 'AI-VOICE-004'}</span>
+                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{activeAudioPlayerModal.callTime || 'Today 11:21 AM'}</div>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.62rem' }}>AI SENTIMENT & OUTCOME</span>
+                <span className="badge badge-success" style={{ fontSize: '0.6rem' }}>COOPERATIVE 98%</span>
+                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>30m WhatsApp Link Active</div>
+              </div>
+            </div>
+
+            {/* Interactive Audio Waveform & Player Console */}
+            <div style={{ background: 'var(--bg-dark)', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Waveform Bars */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '48px', padding: '0 0.5rem', gap: '3px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px' }}>
+                {audioWaveform.map((val, idx) => {
+                  const barProgress = (idx / audioWaveform.length) * audioDuration;
+                  const isPassed = audioCurrentTime >= barProgress;
+                  const dynamicHeight = audioIsPlaying
+                    ? Math.max(15, Math.min(val + Math.sin(Date.now() / 150 + idx) * 15, 95))
+                    : val;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setAudioCurrentTime(Math.floor(barProgress))}
+                      style={{
+                        flex: 1,
+                        height: `${dynamicHeight}%`,
+                        background: isPassed ? 'linear-gradient(180deg, var(--text-cyan), #0284c7)' : 'rgba(255,255,255,0.15)',
+                        borderRadius: '2px',
+                        cursor: 'pointer',
+                        transition: 'height 0.15s ease'
+                      }}
+                      title={`Jump to ${Math.floor(barProgress)}s`}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Scrubber & Time */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                <span>
+                  {String(Math.floor(audioCurrentTime / 60)).padStart(2, '0')}:{String(audioCurrentTime % 60).padStart(2, '0')}
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max={audioDuration}
+                  value={audioCurrentTime}
+                  onChange={(e) => setAudioCurrentTime(Number(e.target.value))}
+                  style={{ flex: 1, margin: '0 0.75rem', cursor: 'pointer' }}
+                />
+                <span>
+                  {String(Math.floor(audioDuration / 60)).padStart(2, '0')}:{String(audioDuration % 60).padStart(2, '0')}
+                </span>
+              </div>
+
+              {/* Player Controls Bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      const nextState = !audioIsPlaying;
+                      setAudioIsPlaying(nextState);
+                      if (nextState) {
+                        setTlActionToast(`Playing Twilio PSTN call audio for ${activeAudioPlayerModal.customerName}...`);
+                        try {
+                          if ('speechSynthesis' in window) {
+                            window.speechSynthesis.cancel();
+                            const fullText = audioTranscript.map(t => `${t.speaker === 'AI' ? 'Agent says' : 'Customer says'}: ${t.text}`).join('. ');
+                            const u = new SpeechSynthesisUtterance(fullText);
+                            u.rate = audioSpeed;
+                            window.speechSynthesis.speak(u);
+                          }
+                        } catch (e) {}
+                      } else {
+                        try {
+                          if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                        } catch (e) {}
+                      }
+                    }}
+                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.85rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                  >
+                    {audioIsPlaying ? <Pause size={14} /> : <Play size={14} />} {audioIsPlaying ? 'Pause' : 'Play Recording'}
+                  </button>
+
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setAudioCurrentTime(0);
+                      try {
+                        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                      } catch (e) {}
+                    }}
+                    style={{ fontSize: '0.72rem', padding: '0.35rem 0.6rem' }}
+                    title="Rewind to 0:00"
+                  >
+                    <RotateCcw size={13} />
+                  </button>
+
+                  <div style={{ display: 'flex', gap: '0.2rem', marginLeft: '0.5rem' }}>
+                    {[1.0, 1.25, 1.5, 2.0].map(spd => (
+                      <button
+                        key={spd}
+                        className={`btn ${audioSpeed === spd ? 'btn-primary' : 'btn-secondary'}`}
+                        onClick={() => setAudioSpeed(spd)}
+                        style={{ fontSize: '0.62rem', padding: '0.15rem 0.4rem' }}
+                      >
+                        {spd}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      const blob = new Blob([`RIFF....WAVEfmt ....data....Twilio PSTN Recording for ${activeAudioPlayerModal.id}`], { type: 'audio/wav' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `Twilio_Recording_${activeAudioPlayerModal.id}.wav`;
+                      a.click();
+                      setTlActionToast(`Downloaded PSTN Call Recording (.WAV) for ${activeAudioPlayerModal.id}!`);
+                    }}
+                    style={{ fontSize: '0.7rem', padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  >
+                    <Download size={13} /> Download .WAV
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Speech-to-Text Synchronized Dialogue Transcript */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                  SYNCHRONIZED SPEECH-TO-TEXT TRANSCRIPT:
+                </span>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    const text = audioTranscript.map(t => `[${t.time}] ${t.speaker}: ${t.text}`).join('\n');
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Transcript_${activeAudioPlayerModal.id}.txt`;
+                    a.click();
+                    setTlActionToast(`Exported Speech Transcript for ${activeAudioPlayerModal.id}!`);
+                  }}
+                  style={{ fontSize: '0.62rem', padding: '0.2rem 0.45rem' }}
+                >
+                  Export Transcript (.TXT)
+                </button>
+              </div>
+
+              <div style={{ background: 'var(--bg-dark)', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0.85rem', maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                {audioTranscript.map((line, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      alignItems: 'flex-start',
+                      padding: '0.3rem 0.4rem',
+                      borderRadius: '6px',
+                      background: 'rgba(255,255,255,0.02)'
+                    }}
+                  >
+                    <span className={`badge ${line.speaker === 'AI' ? 'badge-primary' : 'badge-secondary'}`} style={{ fontSize: '0.58rem', padding: '0.15rem 0.35rem' }}>
+                      {line.speaker}
+                    </span>
+                    <span style={{ fontSize: '0.64rem', color: 'var(--text-cyan)', fontFamily: 'monospace' }}>{line.time}</span>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--text-main)', flex: 1, lineHeight: '1.4' }}>{line.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setAudioIsPlaying(false);
+                  try {
+                    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                  } catch (err) {}
+                  setActiveAudioPlayerModal(null);
+                }}
+              >
+                Close Player
+              </button>
+            </div>
+
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Floating Team Lead Action Toast Notification */}

@@ -26,7 +26,8 @@ import {
   Lock,
   ExternalLink,
   Shield,
-  HelpCircle
+  HelpCircle,
+  MessageSquare
 } from 'lucide-react';
 
 export interface TicketVisionFlowData {
@@ -163,11 +164,15 @@ interface TicketVisionFlowModalProps {
 export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ticket, onClose }) => {
   if (!ticket) return null;
 
+  const [activeTabMode, setActiveTabMode] = useState<'LIFECYCLE_STAGES' | 'OMNICHANNEL_TIMELINE'>('LIFECYCLE_STAGES');
+  const [channelFilter, setChannelFilter] = useState<'ALL' | 'VOICE' | 'EMAIL' | 'CHAT' | 'WHATSAPP'>('ALL');
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+
   const isEscalated = ticket.isEscalated || ticket.status === 'ESCALATED' || String(ticket.status).includes('BLUR') || String(ticket.status).includes('HOLD') || String(ticket.status).includes('DISPUTE');
   const isResolved = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED' || ticket.status === 'APPROVED_PAYMENT' || ticket.status === 'SETTLED';
   const deptUpper = (ticket.departmentLabel || '').toUpperCase();
   const isKycDept = deptUpper.includes('KYC') || ticket.ticketNumber.startsWith('REG-') || ticket.ticketNumber.startsWith('KYC-') || (ticket.subject || '').toUpperCase().includes('KYC') || (ticket.subject || '').toUpperCase().includes('OCR') || (ticket.subject || '').toUpperCase().includes('PASSPORT') || (ticket.subject || '').toUpperCase().includes('AADHAAR');
-  const isPaymentDept = deptUpper.includes('PAYMENT') || ticket.ticketNumber.startsWith('PAY-') || ticket.ticketNumber.startsWith('TXN-') || (ticket.subject || '').toUpperCase().includes('COMMISSION') || (ticket.subject || '').toUpperCase().includes('SETTLEMENT') || (ticket.subject || '').toUpperCase().includes('BILLING') || (ticket.subject || '').toUpperCase().includes('REFUND');
+  const isPaymentDept = deptUpper.includes('PAYMENT') || ticket.ticketNumber.startsWith('PAY-') || ticket.ticketNumber.startsWith('TXN-') || (ticket.subject || '').toUpperCase().includes('COMMISSION') || (ticket.subject || '').toUpperCase().includes('SETTLEMENT') || (ticket.subject || '').toUpperCase().includes('BILLING') || (ticket.subject || '').toUpperCase().includes('DISPUTE');
 
   // Determine active step index
   let activeStep = ticket.currentStageNumber || 1;
@@ -326,7 +331,7 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
         stepNumber: 1,
         stageKey: 'TICKET_RECEIVED',
         title: 'Step 1: Ticket Ingestion & Reception',
-        subtitle: 'Payment / Refund inquiry ticket received and logged into billing ledger',
+        subtitle: 'Payment / Commercial Billing Dispute ticket received and logged into billing ledger',
         actor: 'Omni AI Gateway Router',
         actorType: 'GATEWAY',
         status: 'COMPLETED',
@@ -390,8 +395,8 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
           isTakeoverIntervention: true,
           isEscalationIntervention: true,
           timestamp: ticket.takeoverTimestamp || '16:14:45',
-          description: `Supervisor takeover initiated by Team Lead ${ticket.takeoverActor || 'Marcus Vance'} for refund clearance.`,
-          actionSpotDetails: ['Trigger: High-value refund threshold / Dispute claim', 'Supervisor Action: Ledger lock override']
+          description: `Supervisor takeover initiated by Team Lead ${ticket.takeoverActor || 'Marcus Vance'} for dispute settlement clearance.`,
+          actionSpotDetails: ['Trigger: Commercial Dispute Claim / Policy Review', 'Supervisor Action: Ledger lock override']
         });
 
         steps.push({
@@ -411,8 +416,8 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
         steps.push({
           stepNumber: 7,
           stageKey: 'MANUAL_FINANCE_AUDIT',
-          title: 'Step 7: Manual Financial Audit & Refund/Payout Authorization',
-          subtitle: 'Human officer auditing banking ledger & executing authorized refund / commission release',
+          title: 'Step 7: Manual Financial Audit & Dispute/Payout Authorization',
+          subtitle: 'Human officer auditing banking ledger & executing authorized settlement / commission release',
           actor: 'Anita Roy (Finance Settlement Officer)',
           actorType: 'HUMAN_OFFICER',
           status: isResolved ? 'COMPLETED' : 'IN_PROGRESS',
@@ -781,6 +786,45 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
             </div>
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {/* TAB SELECTOR: LIFECYCLE VS MULTI-CHANNEL TIMELINE */}
+            <div style={{ display: 'flex', background: 'var(--bg-dark)', padding: '0.2rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <button
+                onClick={() => setActiveTabMode('LIFECYCLE_STAGES')}
+                style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTabMode === 'LIFECYCLE_STAGES' ? 'linear-gradient(135deg, #facc15 0%, #eab308 100%)' : 'transparent',
+                  color: activeTabMode === 'LIFECYCLE_STAGES' ? '#1e293b' : 'var(--text-muted)'
+                }}
+              >
+                ⚡ Operational Lifecycle
+              </button>
+              <button
+                onClick={() => setActiveTabMode('OMNICHANNEL_TIMELINE')}
+                style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTabMode === 'OMNICHANNEL_TIMELINE' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'transparent',
+                  color: activeTabMode === 'OMNICHANNEL_TIMELINE' ? '#ffffff' : 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}
+              >
+                💬 Multi-Channel Customer Timeline
+              </button>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               style={{
@@ -876,8 +920,9 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
           </div>
         </div>
 
-        {/* STEP-BY-STEP OPERATIONAL FLOW STREAM */}
-        <div
+        {/* CONDITIONAL VIEW: LIFECYCLE STAGES vs OMNICHANNEL CUSTOMER TIMELINE */}
+        {activeTabMode === 'LIFECYCLE_STAGES' ? (
+          <div
           style={{
             padding: '1.25rem 1.75rem',
             overflowY: 'auto',
@@ -1007,6 +1052,225 @@ export const TicketVisionFlowModal: React.FC<TicketVisionFlowModalProps> = ({ ti
           })}
         </div>
 
+        
+        ) : (
+          <div style={{
+            padding: '1.25rem 1.75rem',
+            overflowY: 'auto',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            background: 'var(--bg-surface)'
+          }}>
+            {/* Multi-Channel Filter Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+                  Customer Multi-Channel Thread:
+                </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0284c7' }}>
+                  {ticket.customerName} ({ticket.customerPhone || '+1 98765 43210'})
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.35rem' }}>
+                {[
+                  { id: 'ALL', label: 'All Events (6)' },
+                  { id: 'VOICE', label: '📞 Inbound Calls' },
+                  { id: 'EMAIL', label: '✉️ Emails' },
+                  { id: 'CHAT', label: '💬 Live Chat' },
+                  { id: 'WHATSAPP', label: '📱 WhatsApp' }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setChannelFilter(f.id as any)}
+                    style={{
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      background: channelFilter === f.id ? (f.id === 'ALL' ? '#0284c7' : f.id === 'VOICE' ? '#f59e0b' : f.id === 'EMAIL' ? '#a855f7' : f.id === 'WHATSAPP' ? '#22c55e' : '#0ea5e9') : 'var(--bg-dark)',
+                      color: channelFilter === f.id ? '#ffffff' : 'var(--text-muted)'
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Interaction Timeline List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {[
+                {
+                  id: 'TL-101',
+                  channel: 'VOICE',
+                  title: 'Inbound Customer Phone Call & Warm Transfer',
+                  actor: 'Alex Vance (Agent) → Sarah Jenkins (Supervisor)',
+                  time: '10:35 AM • Today',
+                  duration: '04:12',
+                  sentiment: 'RESOLVED',
+                  auditAction: 'CALL_TRANSFERRED',
+                  summary: 'Customer called regarding subscription invoice clarification. Transferred via Warm Transfer with supervisor notes attached.',
+                  details: ['Duration: 04:12', 'DTMF Tones Transmitted: 1, 2, 4', 'Call Recording: Encrypted MP3 Vault', 'Notes: Verified billing ledger parity'],
+                  badgeBg: 'rgba(245, 158, 11, 0.15)',
+                  badgeColor: '#f59e0b',
+                  badgeBorder: 'rgba(245, 158, 11, 0.35)',
+                  icon: PhoneCall
+                },
+                {
+                  id: 'TL-102',
+                  channel: 'WHATSAPP',
+                  title: 'WhatsApp Official Support Message & Voice Note',
+                  actor: 'WhatsApp Official Agent Gateway',
+                  time: '10:28 AM • Today',
+                  summary: 'Customer sent voice inquiry regarding discount tiers. AI Agent verified agreement and responded with official WhatsApp HSM template.',
+                  details: ['Voice Note: 0:18 (Transcribed with 99.4% confidence)', 'HSM Template: Pricing & Tier Agreement', 'Status: Read (Double Blue Tick)'],
+                  badgeBg: 'rgba(34, 197, 94, 0.15)',
+                  badgeColor: '#22c55e',
+                  badgeBorder: 'rgba(34, 197, 94, 0.35)',
+                  isVoiceNote: true,
+                  auditAction: 'WHATSAPP_MESSAGE_SENT',
+                  icon: MessageSquare
+                },
+                {
+                  id: 'TL-103',
+                  channel: 'EMAIL',
+                  title: 'Dispatched Enterprise Email Reply',
+                  actor: 'Support Desk (support@forgeindia.com)',
+                  time: '09:45 AM • Today',
+                  summary: 'Formal response with itemized billing breakdown receipt #553 dispatched directly to customer inbox.',
+                  details: ['Recipient: david.chen@email.com', 'Subject: Re: Unable to login / Billing ledger', 'Attachments: Invoice_553_Breakdown.pdf (2.4 MB)'],
+                  badgeBg: 'rgba(168, 85, 247, 0.15)',
+                  badgeColor: '#a855f7',
+                  badgeBorder: 'rgba(168, 85, 247, 0.35)',
+                  auditAction: 'EMAIL_DISPATCHED',
+                  icon: Mail
+                },
+                {
+                  id: 'TL-104',
+                  channel: 'CHAT',
+                  title: 'Live Web Chat Visitor Session',
+                  actor: 'Query AI Autonomous Specialist',
+                  time: 'Yesterday • 04:30 PM',
+                  summary: 'Visitor initiated live chat on /pricing page. Answered SSO login inquiry and provided quick canned policy clarification.',
+                  details: ['Page: /pricing', 'Browser: Chrome 124 (Windows 11)', 'Resolution: Customer accepted guidance'],
+                  badgeBg: 'rgba(2, 132, 199, 0.15)',
+                  badgeColor: '#0284c7',
+                  badgeBorder: 'rgba(2, 132, 199, 0.35)',
+                  auditAction: 'LIVE_CHAT_MESSAGE_SENT',
+                  icon: MessageSquare
+                },
+                {
+                  id: 'TL-105',
+                  channel: 'VOICE',
+                  title: 'DTMF Keypad Tone Sequence & Interactive IVR',
+                  actor: 'Enterprise Telephony Gateway',
+                  time: 'Yesterday • 02:15 PM',
+                  summary: 'Customer navigated automated IVR menu: Selected [1: English] -> [2: Billing Support] -> [4: Supervisor Escalation].',
+                  details: ['Tones Transmitted: 1 -> 2 -> 4', 'Routing Destination: Tier-2 Escalation Desk', 'Audit Verification: Immutable Audit Log Entry Logged'],
+                  badgeBg: 'rgba(245, 158, 11, 0.15)',
+                  badgeColor: '#f59e0b',
+                  badgeBorder: 'rgba(245, 158, 11, 0.35)',
+                  auditAction: 'CALL_DTMF_SENT',
+                  icon: PhoneForwarded
+                }
+              ]
+                .filter(item => channelFilter === 'ALL' || item.channel === channelFilter)
+                .map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: 'var(--bg-dark)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        padding: '1rem 1.25rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.65rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          <div style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '8px',
+                            background: item.badgeBg,
+                            border: `1px solid ${item.badgeBorder}`,
+                            color: item.badgeColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <Icon size={16} />
+                          </div>
+                          <div>
+                            <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>{item.title}</strong>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              Actor: <strong>{item.actor}</strong> • {item.time}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 800,
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '6px',
+                            background: item.badgeBg,
+                            color: item.badgeColor,
+                            border: `1px solid ${item.badgeBorder}`
+                          }}>
+                            {item.channel}
+                          </span>
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 800,
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '6px',
+                            background: 'rgba(16, 185, 129, 0.15)',
+                            color: '#10b981',
+                            border: '1px solid rgba(16, 185, 129, 0.3)'
+                          }}>
+                            Audit Verified: {item.auditAction}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
+                        {item.summary}
+                      </p>
+
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        flexWrap: 'wrap',
+                        background: 'var(--bg-surface)',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)'
+                      }}>
+                        {item.details.map((d, dIdx) => (
+                          <span key={dIdx} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            • {d}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
         {/* MODAL FOOTER */}
         <div
           style={{

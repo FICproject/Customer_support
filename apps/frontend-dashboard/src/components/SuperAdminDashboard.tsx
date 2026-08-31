@@ -360,7 +360,7 @@ interface AIToolRegistryItem {
     | 'KYC'
     | 'PAYMENT'
     | 'REFERRAL_COMMISSION'
-    | 'REFUND'
+    | 'DISPUTE'
     | 'SUPPORT'
     | 'ESCALATION'
     | 'COMMUNICATION'
@@ -452,7 +452,7 @@ export interface WorkflowDefinition {
   id: string;
   name: string;
   code: string;
-  category: 'VENDOR' | 'AGENT' | 'KYC' | 'PAYMENT' | 'REFUND' | 'ESCALATION';
+  category: 'VENDOR' | 'AGENT' | 'KYC' | 'PAYMENT' | 'DISPUTE' | 'ESCALATION';
   categoryLabel: string;
   description: string;
   version: string;
@@ -573,13 +573,16 @@ export interface PaymentLinkInfo {
   qrCodeUrl: string;
 }
 
-export interface PaymentRefundInfo {
-  refundId: string;
-  refundAmount: number;
+export interface PaymentDisputeInfo {
+  disputeId?: string;
+  refundId?: string;
+  settlementAmount?: number;
+  refundAmount?: number;
   reason: string;
   approvedBy: string;
   processedTimestamp: string;
-  gatewayRefundRef: string;
+  gatewayDisputeRef?: string;
+  gatewayRefundRef?: string;
 }
 
 export interface CommissionLedgerEntry {
@@ -607,7 +610,7 @@ export interface PaymentCentreItem {
   failureReason?: string;
   receipt?: PaymentReceiptInfo;
   paymentLink?: PaymentLinkInfo;
-  refund?: PaymentRefundInfo;
+  refund?: PaymentDisputeInfo; dispute?: PaymentDisputeInfo;
   commission?: CommissionLedgerEntry;
 }
 
@@ -973,17 +976,17 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       id: 'tl-1',
       name: 'Marcus Aurelius',
       department: 'Billing & Payments',
-      activeWorkflows: ['Stripe Refund Escalation Chain', 'High Value Chargeback Check'],
+      activeWorkflows: ['Stripe Dispute Resolution Chain', 'High Value Chargeback Check'],
       queueSize: 14,
       aiPerformance: '96.4% confidence match',
       escalationsCount: 3,
       slaCompliance: '98.8%',
       pendingReviews: [
-        { ticketId: 'TCK-201', customer: 'David Miller', amount: '$1,200.00', reason: 'High Refund Threshold Override Required', date: '2026-07-30' },
+        { ticketId: 'TCK-201', customer: 'David Miller', amount: '$1,200.00', reason: 'High Dispute Threshold Override Required', date: '2026-07-30' },
         { ticketId: 'TCK-205', customer: 'Sophia Turner', amount: '$750.00', reason: 'Failed Double Billing Chargeback Dispute', date: '2026-07-30' }
       ],
       approvalHistory: [
-        { action: 'Refund Approval', entity: 'User John Doe ($850)', timestamp: '2026-07-30 11:15', outcome: 'APPROVED', note: 'Validated bank trace ID successfully.' },
+        { action: 'Dispute Settlement Approval', entity: 'User John Doe ($850)', timestamp: '2026-07-30 11:15', outcome: 'APPROVED', note: 'Validated bank trace ID successfully.' },
         { action: 'Chargeback Dispute', entity: 'Client Acme Corp ($1,500)', timestamp: '2026-07-29 16:40', outcome: 'REJECTED', note: 'Customer signed delivery receipt scan.' }
       ]
     },
@@ -1080,12 +1083,12 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           id: 'dec-101',
           ticketId: 'TCK-994',
           timestamp: '2026-07-30 16:20:12',
-          summary: 'Route Billing query to Refund Operations department',
+          summary: 'Route Billing query to Payment Dispute department',
           confidence: 0.99,
           steps: [
-            { name: 'Parse Input Query', detail: 'Analyzing email query text from customer David Miller regarding refund mismatch.' },
-            { name: 'Semantic Matching', detail: 'Query matched cluster category "BILLING_REFUND" with score 0.96.' },
-            { name: 'Tool Invocation', detail: 'Called search_database_schema for "refund_history" using customer_id.' },
+            { name: 'Parse Input Query', detail: 'Analyzing email query text from customer David Miller regarding billing dispute.' },
+            { name: 'Semantic Matching', detail: 'Query matched cluster category "BILLING_DISPUTE" with score 0.96.' },
+            { name: 'Tool Invocation', detail: 'Called search_database_schema for "dispute_history" using customer_id.' },
             { name: 'Verify Limit Thresholds', detail: 'Determined override is within Marcus Aurelius limits ($1200).' },
             { name: 'Final Decision Outcome', detail: 'Routed ticket to BILLING department queue and set urgency to HIGH.' }
           ]
@@ -1173,7 +1176,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       name: 'AI Query Assistant',
       role: 'General Customer Support & Knowledge Retrieval',
       status: 'ACTIVE',
-      currentTask: 'Responding to customer query on refund policy',
+      currentTask: 'Responding to customer query on billing terms',
       queueSize: 5,
       confidenceScore: '97.6%',
       avgResolutionTime: '1.2s',
@@ -1189,10 +1192,10 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           id: 'dec-401',
           ticketId: 'TCK-512',
           timestamp: '2026-07-30 14:02:18',
-          summary: 'Retrieve refund FAQ and generate personalized resolution',
+          summary: 'Retrieve dispute FAQ and generate personalized resolution',
           confidence: 0.98,
           steps: [
-            { name: 'Parse Query', detail: 'Extracted intent: REFUND_ELIGIBILITY_CHECK.' },
+            { name: 'Parse Query', detail: 'Extracted intent: DISPUTE_ELIGIBILITY_CHECK.' },
             { name: 'RAG Retrieval', detail: 'Fetched 3 matching policy nodes from Vector Database.' },
             { name: 'Final Decision Outcome', detail: 'Sent personalized reply to customer.' }
           ]
@@ -1202,7 +1205,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     {
       id: 'ai-5',
       name: 'AI Payment Ledger Agent',
-      role: 'Financial Refunds & Referral Payouts',
+      role: 'Commercial Dispute Settlements & Referral Payouts',
       status: 'ACTIVE',
       currentTask: 'Processing 10% referral commission payout',
       queueSize: 2,
@@ -1471,7 +1474,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
   // 1. Business Rules
   const [bizMaxAutoApprove, setBizMaxAutoApprove] = useState('500');
-  const [bizMaxRefundsPerMonth, setBizMaxRefundsPerMonth] = useState('3');
+  const [bizMaxDisputesPerMonth, setBizMaxDisputesPerMonth] = useState('3');
   const [bizAutoApproveHighTrust, setBizAutoApproveHighTrust] = useState(true);
 
   // 2. SLA Policies
@@ -1577,7 +1580,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   const [featureFlags, setFeatureFlags] = useState<any>({
     ENABLE_VOICE_AI: true,
     ENABLE_WHATSAPP_BOT: true,
-    ENABLE_AUTO_REFUNDS: false,
+    ENABLE_AUTO_SETTLEMENTS: false,
     ENABLE_ADVANCED_KYC: true,
     ENABLE_REALTIME_METRICS: true
   });
@@ -1744,7 +1747,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     { id: 'usr-8', name: 'Ananya Sharma', email: 'ananya.sharma@enterprise.ai', role: 'KYC_HUMAN_OFFICER', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:35:10', phone: '+91 98765 11223', assignedCount: 15, csatScore: '4.96/5', department: 'KYC & Document Verification', shift: 'General Shift (08:30 - 17:30 IST)', officerId: 'KYC-OFF-01', currentWork: 'Biometric Live Facial Match Review (99.4% Confidence) for enterprise vendor onboarding', handledToday: 52, specialization: 'OCR Document Audits, Aadhaar XML Verification & Biometric Face Match' },
     { id: 'usr-9', name: 'Vikram Joshi', email: 'vikram.joshi@enterprise.ai', role: 'KYC_HUMAN_OFFICER', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:10:00', phone: '+91 98765 44332', assignedCount: 9, csatScore: '4.89/5', department: 'KYC & Document Verification', shift: 'General Shift (08:30 - 17:30 IST)', officerId: 'KYC-OFF-02', currentWork: 'Auditing PAN-Aadhaar Name Mismatch Queue & Manual Police Verification Proofs', handledToday: 41, specialization: 'Fraud Document Holds & Name Discrepancy Audits' },
     { id: 'usr-10', name: 'Rajesh Kumar', email: 'rajesh.kumar@enterprise.ai', role: 'HUMAN_AGENT', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:25:40', phone: '+91 98765 99887', assignedCount: 7, csatScore: '4.85/5', department: 'Customer Support & Queries', shift: 'Morning Shift (09:00 - 18:00 IST)', officerId: 'SUPPORT-OFF-01', currentWork: 'Omnichannel Live Chat Interventions for VIP Registered Vendors', handledToday: 29, specialization: 'Omnichannel Chat Interventions & PSTN Outbound Voice Dialing' },
-    { id: 'usr-11', name: 'Priyanka Patel', email: 'priyanka.patel@enterprise.ai', role: 'HUMAN_AGENT', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 10:55:00', phone: '+91 98765 77665', assignedCount: 6, csatScore: '4.90/5', department: 'Customer Support & Queries', shift: 'Evening Shift (14:00 - 23:00 IST)', officerId: 'SUPPORT-OFF-02', currentWork: 'Resolving Onboarding Fee Refund Policy Terms & General Support Escalations', handledToday: 31, specialization: 'Refund Policies & Support Escalation Handling' },
+    { id: 'usr-11', name: 'Priyanka Patel', email: 'priyanka.patel@enterprise.ai', role: 'HUMAN_AGENT', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 10:55:00', phone: '+91 98765 77665', assignedCount: 6, csatScore: '4.90/5', department: 'Customer Support & Queries', shift: 'Evening Shift (14:00 - 23:00 IST)', officerId: 'SUPPORT-OFF-02', currentWork: 'Resolving Onboarding Fee Non-Refundable Policy Terms & Support Escalations', handledToday: 31, specialization: 'Dispute Settlements & Support Escalation Handling' },
     
     // External Entities
     { id: 'usr-12', name: 'Starlight Retailers (Vendor)', email: 'billing@starlight.com', role: 'VENDOR', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 08:50:11', phone: '+1 (555) 392-1049', assignedCount: 1, csatScore: 'N/A' },
@@ -2388,12 +2391,12 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           tasksToday: 1450,
           successRatePercent: 99.9,
           avgLatencyMs: 95,
-          primaryCapabilities: ['Stripe/Razorpay Webhooks', 'Agent Commission Payouts', 'Ledger Integrity Audits', 'Refund Guardrails'],
+          primaryCapabilities: ['Stripe/Razorpay Webhooks', 'Agent Commission Payouts', 'Ledger Integrity Audits', 'Dispute Settlement Guardrails'],
           allowedTools: ['stripe_ledger_service', 'wallet_credit_api', 'invoice_pdf_generator', 'fraud_anomaly_scanner'],
           knowledgeAccess: ['Commission Tier Schema 2026', 'Banking Settlement Rules', 'Tax Deduction Rules (TDS)'],
           recentDecisions: [
             { id: 'rd-p-1', timestamp: '10:34:02 AM', action: 'CREDITED_AGENT_WALLET', target: 'Agent #AGT-8821', status: 'RESOLVED', durationMs: 85, details: 'Credited ₹350 referral fee for onboarded merchant' },
-            { id: 'rd-p-2', timestamp: '10:30:15 AM', action: 'PROCESSED_REFUND', target: 'Order #ORD-8812', status: 'RESOLVED', durationMs: 110, details: 'Authorized partial refund of ₹800 upon customer return approval' },
+            { id: 'rd-p-2', timestamp: '10:30:15 AM', action: 'PROCESSED_DISPUTE', target: 'Order #ORD-8812', status: 'RESOLVED', durationMs: 110, details: 'Authorized commercial settlement of ₹800 upon policy review' },
             { id: 'rd-p-3', timestamp: '10:21:40 AM', action: 'HOLD_FOR_APPROVAL', target: 'Payout #PY-901', status: 'BLOCKED', durationMs: 90, details: 'Requested amount ₹25,000 exceeds single transaction auto-approval limit' }
           ]
         }
@@ -2869,7 +2872,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       else if (lower.includes('address') || lower.includes('utility')) purpose = 'Address Proof Verification';
       else purpose = 'Identity & KYC Document Validation';
     } else if (lower.includes('refund') || lower.includes('chargeback') || lower.includes('dispute') || lower.includes('reversal')) {
-      purpose = 'Refund & Payment Dispute Handler';
+      purpose = 'Commercial Billing & Payment Dispute Handler';
     } else if (lower.includes('payment') || lower.includes('invoice') || lower.includes('billing') || lower.includes('checkout') || lower.includes('subscription') || lower.includes('transaction')) {
       if (lower.includes('failed') || lower.includes('retry') || lower.includes('declined')) purpose = 'Failed Payment Recovery & Retry';
       else if (lower.includes('invoice') || lower.includes('receipt')) purpose = 'Invoice & Receipt Generation';
@@ -3542,11 +3545,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'createCancellationRequest',
       category: 'ORDERS',
       categoryLabel: 'Orders',
-      description: 'Submit an automated cancellation request, halt carrier dispatch, and queue refund workflow.',
+      description: 'Submit an automated cancellation request, halt carrier dispatch, and queue dispute cancellation workflow.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId', 'reason'],
-        sampleJsonPayload: '{\n  "orderId": "ORD-99182",\n  "reason": "Customer found alternative",\n  "refundMode": "ORIGINAL_PAYMENT"\n}',
+        sampleJsonPayload: '{\n  "orderId": "ORD-99182",\n  "reason": "Customer found alternative",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
         strictTypeCheck: true
       },
       timeoutMs: 3000,
@@ -3636,7 +3639,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'getBookingCancellationEligibility',
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
-      description: 'Check whether cancellation is possible and calculate penalty/refund window according to provider policies.',
+      description: 'Check whether cancellation is possible and calculate penalty/settlement window according to provider policies.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId'],
@@ -3659,11 +3662,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'createBookingCancellationRequest',
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
-      description: 'Submit an automated booking cancellation, release reservation inventory, and trigger refund pipeline.',
+      description: 'Submit an automated booking cancellation, release reservation inventory, and trigger dispute cancellation pipeline.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId', 'reason'],
-        sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821",\n  "reason": "Travel date changed",\n  "refundMode": "ORIGINAL_PAYMENT"\n}',
+        sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821",\n  "reason": "Travel date changed",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
         strictTypeCheck: true
       },
       timeoutMs: 3000,
@@ -4566,7 +4569,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'getPaymentStatus',
       category: 'PAYMENT',
       categoryLabel: 'Payment',
-      description: 'Fetch real-time transaction lifecycle status: PAID, PENDING, FAILED, REFUNDED, DISPUTED.',
+      description: 'Fetch real-time transaction lifecycle status: PAID, PENDING, FAILED, SETTLED, DISPUTED.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
@@ -4589,7 +4592,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'getPaymentHistory',
       category: 'PAYMENT',
       categoryLabel: 'Payment',
-      description: 'Fetch historical transaction statement ledger, invoice receipts, credit settlements & refunds for a user.',
+      description: 'Fetch historical transaction statement ledger, invoice receipts, credit settlements & billing adjustments for a user.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
@@ -4931,14 +4934,14 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       successRate: 100
     },
 
-    // 11. REFUND
+    // 11. DISPUTE SETTLEMENT
     {
       id: 'tool-rfd-1',
-      name: 'Get Refund Policy',
-      code: 'getRefundPolicy',
-      category: 'REFUND',
-      categoryLabel: 'Refund',
-      description: 'Fetch organization refund policy guidelines, cooling-off windows & deduction schedules.',
+      name: 'Get Platform Dispute Policy',
+      code: 'getDisputePolicy',
+      category: 'DISPUTE',
+      categoryLabel: 'Dispute Settlement',
+      description: 'Fetch organization dispute policy guidelines, cooling-off windows & deduction schedules.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
@@ -4957,11 +4960,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     },
     {
       id: 'tool-rfd-2',
-      name: 'Check Refund Eligibility',
-      code: 'checkRefundEligibility',
-      category: 'REFUND',
-      categoryLabel: 'Refund',
-      description: 'Evaluate order/booking timestamp, cancellation state, and merchant policy to compute refundable amount.',
+      name: 'Check Dispute Eligibility',
+      code: 'checkDisputeEligibility',
+      category: 'DISPUTE',
+      categoryLabel: 'Dispute Settlement',
+      description: 'Evaluate order/booking timestamp, cancellation state, and merchant policy to compute settlement amount.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId', 'reason'],
@@ -4980,15 +4983,15 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     },
     {
       id: 'tool-rfd-3',
-      name: 'Create Refund Request',
-      code: 'createRefundRequest',
-      category: 'REFUND',
-      categoryLabel: 'Refund',
-      description: 'Draft and queue a formal refund request ticket for Team Lead / Super Admin review. (AI cannot disburse directly)',
+      name: 'Create Dispute Claim',
+      code: 'createDisputeClaim',
+      category: 'DISPUTE',
+      categoryLabel: 'Dispute Settlement',
+      description: 'Draft and queue a formal dispute claim ticket for Team Lead / Super Admin review. (AI cannot disburse directly)',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId', 'amount', 'reason'],
-        sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "bookingId": "BKG-HTL-8821",\n  "amount": 2400,\n  "reason": "Flight cancelled",\n  "refundMode": "ORIGINAL_PAYMENT"\n}',
+        sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "bookingId": "BKG-HTL-8821",\n  "amount": 2400,\n  "reason": "Flight cancelled",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
         strictTypeCheck: true
       },
       timeoutMs: 2500,
@@ -5003,15 +5006,15 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     },
     {
       id: 'tool-rfd-4',
-      name: 'Get Refund Status',
-      code: 'getRefundStatus',
-      category: 'REFUND',
-      categoryLabel: 'Refund',
-      description: 'Fetch current lifecycle stage of submitted refund request: QUEUED_FOR_APPROVAL, TL_APPROVED, PROCESSING, CREDITED, REJECTED.',
+      name: 'Get Dispute Claim Status',
+      code: 'getDisputeStatus',
+      category: 'DISPUTE',
+      categoryLabel: 'Dispute Settlement',
+      description: 'Fetch current lifecycle stage of submitted dispute request: QUEUED_FOR_APPROVAL, TL_APPROVED, PROCESSING, CREDITED, REJECTED.',
       allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
-        sampleJsonPayload: '{\n  "refundRequestId": "RFD-99128"\n}',
+        sampleJsonPayload: '{\n  "disputeClaimId": "DSP-99128"\n}',
         strictTypeCheck: true
       },
       timeoutMs: 1500,
@@ -5639,7 +5642,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       title: 'Customer Onboarding & AI Support Multi-channel FAQ Guide',
       category: 'FAQ',
       categoryLabel: 'FAQs',
-      content: 'Comprehensive FAQ document covering chat widget setup, WhatsApp bot connection, resolution time SLA guarantees, refund eligibility rules, and human escalation triggers.',
+      content: 'Comprehensive FAQ document covering chat widget setup, WhatsApp bot connection, resolution time SLA guarantees, dispute eligibility rules, and human escalation triggers.',
       version: 'v2.4',
       status: 'PUBLISHED',
       author: 'Support Operations Lead',
@@ -5734,7 +5737,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       title: 'Multi-Currency Transaction Settlement & Commission Payout Rules',
       category: 'PAYMENT_RULE',
       categoryLabel: 'Payment Rules',
-      content: 'Financial rules for Stripe & Razorpay gateway integrations, 3DS authentication flow, retry limits, refund authorization bounds, and 10% tie-up agent referral commission calculation logic.',
+      content: 'Financial rules for Stripe & Razorpay gateway integrations, 3DS authentication flow, retry limits, dispute settlement bounds, and 10% tie-up agent referral commission calculation logic.',
       version: 'v3.2',
       status: 'PUBLISHED',
       author: 'Finance & Payments Admin',
@@ -6149,14 +6152,14 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       ]
     },
 
-    // ── 6. REFUND PROCESS ──────────────────────────────────────────────────────
+    // ── 6. DISPUTE SETTLEMENT PROCESS ──────────────────────────────────────────────────────
     {
-      id: 'wf-refund-process',
-      name: 'Customer Refund Policy & Automated Processing Engine',
-      code: 'refund_process_wf',
-      category: 'REFUND',
-      categoryLabel: 'Refund Process',
-      description: 'Audits customer refund requests against 30-day return policy, auto-issues refunds <= $200 or escalates larger refunds to Finance TL.',
+      id: 'wf-dispute-settlement',
+      name: 'Commercial Dispute Settlement & Ledger Reconciliation Engine',
+      code: 'dispute_settlement_wf',
+      category: 'DISPUTE',
+      categoryLabel: 'Dispute Settlement',
+      description: 'Audits customer commercial dispute claims against platform No-Refund SOPs, auto-settles minor balance adjustments or escalates to Finance TL.',
       version: 'v1.9',
       status: 'ACTIVE',
       lastExecuted: '18 Mins Ago',
@@ -6168,17 +6171,17 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
         {
           id: 'n-501',
           stepNumber: 1,
-          name: 'AI Query Agent: Refund Request Audit',
+          name: 'AI Query Agent: Dispute Claim Audit',
           type: 'AI_STEP',
           typeLabel: 'AI Step',
           assignedActor: 'AI Query Agent',
-          details: 'Fetches order item status, purchase date, shipment delivery proof, and refund reason.',
+          details: 'Fetches order item status, purchase date, shipment delivery proof, and dispute claim reason.',
           configParams: { aiAgentCode: 'AI_QUERY' }
         },
         {
           id: 'n-502',
           stepNumber: 2,
-          name: 'Timer: Refund Grace Period Hold',
+          name: 'Timer: Dispute Verification Grace Period',
           type: 'TIMER',
           typeLabel: 'Timer',
           assignedActor: 'SLA Scheduler',
@@ -6188,31 +6191,31 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
         {
           id: 'n-503',
           stepNumber: 3,
-          name: 'Condition: Refund Amount <= $200.00 Policy',
+          name: 'Condition: Dispute Settlement <= $200.00 Policy',
           type: 'CONDITION',
           typeLabel: 'Condition',
           assignedActor: 'Business Policy Engine',
-          details: 'Expression: RefundAmount <= $200.00 && DaysSincePurchase <= 30',
-          configParams: { conditionExpression: 'RefundAmount <= 200.00 && DaysSincePurchase <= 30' }
+          details: 'Expression: DisputeAmount <= $200.00 && DaysSincePurchase <= 30',
+          configParams: { conditionExpression: 'DisputeAmount <= 200.00 && DaysSincePurchase <= 30' }
         },
         {
           id: 'n-504',
           stepNumber: 4,
-          name: 'Human Approval: Finance TL Refund Clearance',
+          name: 'Human Approval: Finance TL Dispute Settlement Clearance',
           type: 'HUMAN_APPROVAL',
           typeLabel: 'Human Approval',
           assignedActor: 'Finance Team Lead',
-          details: 'Review required for custom refunds > $200 or out-of-warranty claims.',
+          details: 'Review required for custom billing disputes > $200 or out-of-policy claims.',
           configParams: { approvalRole: 'FINANCE_TL' }
         },
         {
           id: 'n-505',
           stepNumber: 5,
-          name: 'AI Step: Stripe Gateway Refund & Credit Dispatch',
+          name: 'AI Step: Gateway Dispute Settlement & Credit Dispatch',
           type: 'AI_STEP',
           typeLabel: 'AI Step',
           assignedActor: 'AI Payment Agent',
-          details: 'Executes Stripe API refund, updates inventory stock, and sends email receipt.',
+          details: 'Executes gateway settlement adjustment, updates ledger, and sends email receipt.',
           configParams: { aiAgentCode: 'AI_PAYMENT' }
         }
       ]
@@ -6337,7 +6340,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       customerName: 'Elena Rostova',
       customerEmail: 'elena.rostova@techsolutions.io',
       customerPhone: '+1 (555) 891-3412',
-      subject: 'Stripe Double Billing Charge & Instant Refund Claim',
+      subject: 'Stripe Double Billing Charge & Settlement Claim',
       department: 'PAYMENT',
       departmentLabel: 'Payment Department',
       status: 'IN_PROGRESS',
@@ -6350,7 +6353,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       aiConfidenceScore: 98.4,
       chatHistory: [
         { id: 'c-201', sender: 'CUSTOMER', senderName: 'Elena Rostova', timestamp: '15:30', text: 'I see two charges of $149.00 on my credit card for invoice #INV-8821.' },
-        { id: 'c-202', sender: 'AI_AGENT', senderName: 'AI Payment Agent (v3.2)', timestamp: '15:31', text: 'I checked your payment ledger. Transaction ch_3M921 was duplicated due to a 3DS gateway timeout. I am initiating a $149.00 gateway refund.' }
+        { id: 'c-202', sender: 'AI_AGENT', senderName: 'AI Payment Agent (v3.2)', timestamp: '15:31', text: 'I checked your payment ledger. Transaction ch_3M921 was duplicated due to a 3DS gateway timeout. I am initiating a $149.00 gateway billing settlement.' }
       ],
       attachments: [
         { id: 'att-3', fileName: 'stripe_receipt_chk881.pdf', fileType: 'PDF', fileSize: '320 KB', uploadTimestamp: '2026-07-29 15:30', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
@@ -6496,7 +6499,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       customerName: 'Carlos Gomez',
       customerEmail: 'carlos.gomez@hardware.co',
       customerPhone: '+1 (555) 902-8819',
-      subject: 'Refund Claim Exceeding $200 Limit - Finance Admin Sign-off',
+      subject: 'Billing Dispute Exceeding $200 Limit - Finance Admin Sign-off',
       department: 'PAYMENT',
       departmentLabel: 'Payment Department',
       status: 'ESCALATED',
@@ -6508,7 +6511,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       isEscalated: true,
       aiConfidenceScore: 65.4,
       chatHistory: [
-        { id: 'c-801', sender: 'CUSTOMER', senderName: 'Carlos Gomez', timestamp: '14:50', text: 'Requesting a $650.00 refund for damaged server rack chassis upon arrival.' }
+        { id: 'c-801', sender: 'CUSTOMER', senderName: 'Carlos Gomez', timestamp: '14:50', text: 'Requesting a $650.00 commercial settlement for damaged server rack chassis upon arrival.' }
       ],
       attachments: [
         { id: 'att-10', fileName: 'defective_hardware_photo.jpg', fileType: 'IMAGE', fileSize: '3.1 MB', uploadTimestamp: '2026-07-29 14:50', url: 'https://images.unsplash.com/photo-1588702547919-26089e690ecd?w=600&q=80' },
@@ -6838,10 +6841,10 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   ]);
 
   // Payment & Referral Operational Control Centre State
-  const [paymentSubTab, setPaymentSubTab] = useState<'PENDING' | 'SUCCESSFUL' | 'FAILED' | 'PAYMENT_LINKS' | 'RECEIPTS' | 'REFUNDS' | 'COMMISSION_LEDGER'>('PENDING');
+  const [paymentSubTab, setPaymentSubTab] = useState<'PENDING' | 'SUCCESSFUL' | 'FAILED' | 'PAYMENT_LINKS' | 'RECEIPTS' | 'DISPUTES' | 'COMMISSION_LEDGER'>('PENDING');
   const [searchPaymentQuery, setSearchPaymentQuery] = useState<string>('');
   const [inspectingPayment, setInspectingPayment] = useState<PaymentCentreItem | null>(null);
-  const [inspectPaymentModalTab, setInspectPaymentModalTab] = useState<'OVERVIEW' | 'LINK_RECEIPT' | 'REFUND' | 'COMMISSION'>('OVERVIEW');
+  const [inspectPaymentModalTab, setInspectPaymentModalTab] = useState<'OVERVIEW' | 'LINK_RECEIPT' | 'DISPUTE' | 'COMMISSION'>('OVERVIEW');
   const [isGenerateLinkModalOpen, setIsGenerateLinkModalOpen] = useState(false);
   const [newLinkForm, setNewLinkForm] = useState({
     amount: '149.00',
@@ -6892,12 +6895,12 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       paymentMethod: 'Mastercard ending in 8910',
       timestamp: '2026-07-29 16:10',
       refund: {
-        refundId: 'ref-3M99120',
-        refundAmount: 149.00,
-        reason: 'Duplicate charge refund initiated via AI Payment Agent',
+        disputeId: 'dsp-3M99120',
+        settlementAmount: 149.00,
+        reason: 'Duplicate charge settlement initiated via AI Payment Agent',
         approvedBy: 'AI Payment Agent',
         processedTimestamp: '2026-07-29 16:12',
-        gatewayRefundRef: 'ch_3M99120_re_881'
+        gatewayDisputeRef: 'ch_3M99120_re_881'
       }
     },
     {
@@ -7043,18 +7046,18 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       channelLabel: 'Website Live Chat',
       customerName: 'Carlos Gomez',
       customerContact: 'carlos.gomez@hardware.co',
-      subjectOrTopic: 'Refund claim for damaged server rack chassis exceeding $200 limit',
+      subjectOrTopic: 'Commercial dispute for damaged server rack chassis exceeding $200 limit',
       status: 'ESCALATED',
       timestamp: '2026-07-29 14:50',
       recordingPermitted: false,
-      aiSummary: 'Customer requested a $650.00 refund for a damaged server chassis. Request exceeded the $200.00 AI auto-refund threshold. AI Bot escalated ticket TCK-9948 to Finance Admin Desk.',
+      aiSummary: 'Customer requested a $650.00 dispute adjustment for a damaged server chassis. Request exceeded the $200.00 AI auto-settlement threshold. AI Bot escalated ticket TCK-9948 to Finance Admin Desk.',
       sentiment: 'FRUSTRATED',
       outcome: 'ESCALATED_TO_AGENT',
       outcomeLabel: 'Escalated to Finance Admin Desk',
       followUp: 'Finance Admin Desk sign-off required within 15 minutes SLA.',
       transcript: [
-        { id: 't-10', speaker: 'CUSTOMER', speakerName: 'Carlos Gomez', timestamp: '14:50:10', messageText: 'I received the server rack chassis today and the frame is bent. I need an immediate $650 refund.' },
-        { id: 't-11', speaker: 'AI_AGENT', speakerName: 'AI Support Assistant', timestamp: '14:50:18', messageText: 'I am so sorry to hear that Carlos. I have inspected your invoice. Since the refund amount exceeds our $200 instant limit, I am connecting you with Finance Admin Desk.' }
+        { id: 't-10', speaker: 'CUSTOMER', speakerName: 'Carlos Gomez', timestamp: '14:50:10', messageText: 'I received the server rack chassis today and the frame is bent. I need an immediate $650 commercial settlement.' },
+        { id: 't-11', speaker: 'AI_AGENT', speakerName: 'AI Support Assistant', timestamp: '14:50:18', messageText: 'I am so sorry to hear that Carlos. I have inspected your invoice. Since the dispute amount exceeds our $200 instant settlement limit, I am connecting you with Finance Admin Desk.' }
       ]
     },
     {
@@ -7068,14 +7071,14 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       status: 'CLOSED',
       timestamp: '2026-07-29 16:10',
       recordingPermitted: false,
-      aiSummary: 'Customer emailed about a duplicate $149.00 charge on Stripe. AI Email Agent verified duplicate transaction TXN-9012, issued refund #ref_3M99120, and dispatched refund confirmation email.',
+      aiSummary: 'Customer emailed about a duplicate $149.00 charge on Stripe. AI Email Agent verified duplicate transaction TXN-9012, issued settlement adjustment #ref_3M99120, and dispatched confirmation email.',
       sentiment: 'NEUTRAL',
       outcome: 'RESOLVED_BY_AI',
       outcomeLabel: 'Resolved by AI Email Bot',
-      followUp: 'Verify Stripe refund clearance in 24 hours.',
+      followUp: 'Verify Stripe settlement clearance in 24 hours.',
       transcript: [
         { id: 't-20', speaker: 'CUSTOMER', speakerName: 'Robert Vance', timestamp: '16:10:00', messageText: 'Subject: Duplicate Charge on Invoice #8812\nHi team, I noticed two $149 charges on my card today.' },
-        { id: 't-21', speaker: 'AI_AGENT', speakerName: 'AI Email Assistant', timestamp: '16:11:15', messageText: 'Subject: Re: Duplicate Charge on Invoice #8812\nHello Robert, We confirmed duplicate charge TXN-9012. We have processed a $149.00 refund back to your card (Refund Ref: ref_3M99120).' }
+        { id: 't-21', speaker: 'AI_AGENT', speakerName: 'AI Email Assistant', timestamp: '16:11:15', messageText: 'Subject: Re: Duplicate Charge on Invoice #8812\nHello Robert, We confirmed duplicate charge TXN-9012. We have processed a $149.00 settlement credit back to your card (Dispute Ref: ref_3M99120).' }
       ]
     },
     {
@@ -7394,15 +7397,15 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           'wf-direct-vendor': { cat: 'VENDOR', label: 'Vendor Registration' },
           'wf-kyc-approval': { cat: 'KYC', label: 'KYC Approval' },
           'wf-payment-verification': { cat: 'PAYMENT', label: 'Payment Verification' },
-          'wf-refund-process': { cat: 'REFUND', label: 'Refund Process' },
+          'wf-dispute-settlement': { cat: 'DISPUTE', label: 'Dispute Settlement' },
           'wf-escalation-process': { cat: 'ESCALATION', label: 'Escalation Process' },
         };
 
         const mappedWorkflows = wfRes.data.map((wf: any) => {
           if (wf.nodes) return wf;
           const meta = categoryLabelsMap[wf.id] || { 
-            cat: wf.id?.includes('agent') ? 'AGENT' : wf.id?.includes('vendor') ? 'VENDOR' : wf.id?.includes('kyc') ? 'KYC' : wf.id?.includes('payment') ? 'PAYMENT' : wf.id?.includes('refund') ? 'REFUND' : wf.id?.includes('escalation') ? 'ESCALATION' : 'AGENT',
-            label: wf.id?.includes('agent') ? 'Agent Registration' : wf.id?.includes('vendor') ? 'Vendor Registration' : wf.id?.includes('kyc') ? 'KYC Approval' : wf.id?.includes('payment') ? 'Payment Verification' : wf.id?.includes('refund') ? 'Refund Process' : wf.id?.includes('escalation') ? 'Escalation Process' : 'General Flow'
+            cat: wf.id?.includes('agent') ? 'AGENT' : wf.id?.includes('vendor') ? 'VENDOR' : wf.id?.includes('kyc') ? 'KYC' : wf.id?.includes('payment') ? 'PAYMENT' : wf.id?.includes('dispute')  ? 'DISPUTE' : wf.id?.includes('escalation') ? 'ESCALATION' : 'AGENT',
+            label: wf.id?.includes('agent') ? 'Agent Registration' : wf.id?.includes('vendor') ? 'Vendor Registration' : wf.id?.includes('kyc') ? 'KYC Approval' : wf.id?.includes('payment') ? 'Payment Verification' : wf.id?.includes('dispute')  ? 'Dispute Settlement' : wf.id?.includes('escalation') ? 'Escalation Process' : 'General Flow'
           };
           return {
             id: wf.id || `wf-${Math.random()}`,
@@ -8091,15 +8094,15 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 </div>
               </div>
 
-              {/* 7. Refunds */}
+              {/* 7. Dispute Settlements */}
               <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #ef4444, #fb7185)' } as React.CSSProperties}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-kpi-title, #0f172a)', letterSpacing: '-0.01em' }}>Refunds Processed</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-kpi-title, #0f172a)', letterSpacing: '-0.01em' }}>Dispute Settlements</span>
                   <RefreshCw size={18} className="text-rose" />
                 </div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.25 }}>₹250</div>
                 <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                  0.2% Total Volume Rate
+                  0.2% Commercial Dispute Rate
                 </div>
               </div>
             </div>
@@ -10790,7 +10793,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. AI Agent Refund Assistant"
+                  placeholder="e.g. AI Agent Dispute Assistant"
                   value={newAgentName}
                   onChange={(e) => setNewAgentName(e.target.value)}
                   style={{ width: '100%', padding: '0.55rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}
@@ -10802,7 +10805,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. Automating Stripe Refund Escalation Checks"
+                  placeholder="e.g. Automating Stripe Dispute Escalation Checks"
                   value={newAgentCategory}
                   onChange={(e) => setNewAgentCategory(e.target.value)}
                   style={{ width: '100%', padding: '0.55rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}
@@ -10868,7 +10871,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. AI Agent Refund Assistant"
+                  placeholder="e.g. AI Agent Dispute Assistant"
                   value={editAgentName}
                   onChange={(e) => setEditAgentName(e.target.value)}
                   style={{ width: '100%', padding: '0.55rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}
@@ -10880,7 +10883,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g. Automating Stripe Refund Escalation Checks"
+                  placeholder="e.g. Automating Stripe Dispute Escalation Checks"
                   value={editAgentCategory}
                   onChange={(e) => setEditAgentCategory(e.target.value)}
                   style={{ width: '100%', padding: '0.55rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}
@@ -11829,7 +11832,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                     <input 
                       className="form-input" 
                       style={{ paddingRight: '2.5rem', width: '100%', borderRadius: isCategoryDropdownOpen ? '8px 8px 0 0' : '8px' }}
-                      placeholder="e.g. System Prompt, Sales, Refund..." 
+                      placeholder="e.g. System Prompt, Sales, Dispute..." 
                       value={newPromptForm.customCategory || (newPromptForm.category === 'CUSTOM' ? '' : `${newPromptForm.category.charAt(0) + newPromptForm.category.slice(1).toLowerCase()} Prompt`)} 
                       onChange={e => {
                         const val = e.target.value;
@@ -12386,7 +12389,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <option value="KYC">KYC ({toolsList.filter(t => t.category === 'KYC').length})</option>
                 <option value="PAYMENT">Payment ({toolsList.filter(t => t.category === 'PAYMENT').length})</option>
                 <option value="REFERRAL_COMMISSION">Referral & Commission ({toolsList.filter(t => t.category === 'REFERRAL_COMMISSION').length})</option>
-                <option value="REFUND">Refund ({toolsList.filter(t => t.category === 'REFUND').length})</option>
+                <option value="DISPUTE">Dispute Settlement ({toolsList.filter(t => t.category === 'DISPUTE' ).length})</option>
                 <option value="SUPPORT">Support ({toolsList.filter(t => t.category === 'SUPPORT' || t.category === 'TICKET').length})</option>
               </select>
 
@@ -12430,11 +12433,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
                   let risk: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' = tool.riskLevel || 'LOW';
                   if (!tool.riskLevel) {
-                    if (codeLow.includes('executerefund') || nameLow.includes('execute refund') || codeLow.includes('manualkycoverride') || codeLow.includes('emergency')) {
+                    if (codeLow.includes('executedispute') || nameLow.includes('execute dispute') || codeLow.includes('manualkycoverride') || codeLow.includes('emergency')) {
                       risk = 'CRITICAL';
                     } else if (
                       codeLow.includes('approv') || codeLow.includes('reject') ||
-                      codeLow.includes('createrefundrequest') || nameLow.includes('refund request') ||
+                      codeLow.includes('createdisputeclaim') || nameLow.includes('dispute request') ||
                       codeLow.includes('withdrawal') || codeLow.includes('createcancellation') ||
                       codeLow.includes('createescalation') || codeLow.includes('assigntoteamlead')
                     ) {
@@ -12734,7 +12737,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
                           const valLow = val.toLowerCase();
                           let inferredCategory = newToolForm.category;
-                          if (valLow.includes('pay') || valLow.includes('refund') || valLow.includes('payout') || valLow.includes('commission') || valLow.includes('receipt')) {
+                          if (valLow.includes('pay') || valLow.includes('dispute') || valLow.includes('payout') || valLow.includes('commission') || valLow.includes('receipt')) {
                             inferredCategory = 'PAYMENT';
                           } else if (valLow.includes('kyc') || valLow.includes('document') || valLow.includes('passport') || valLow.includes('aadhaar')) {
                             inferredCategory = 'SECURITY';
@@ -12793,7 +12796,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                           const newCat = e.target.value as any;
                           let autoRoles = 'super_admin, ai_orchestrator';
                           if (newCat === 'KYC') autoRoles = 'super_admin, ai_orchestrator, ai_kyc_agent';
-                          else if (newCat === 'PAYMENT' || newCat === 'REFERRAL_COMMISSION' || newCat === 'REFUND') autoRoles = 'super_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
+                          else if (newCat === 'PAYMENT' || newCat === 'REFERRAL_COMMISSION' || newCat === 'DISPUTE') autoRoles = 'super_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
                           else if (newCat === 'COMMUNICATION' || newCat === 'NOTIFICATION') autoRoles = 'super_admin, ai_orchestrator, ai_communication_agent, ai_query_agent';
                           else if (newCat === 'SUPPORT' || newCat === 'ESCALATION') autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_escalation_agent';
                           else if (newCat === 'CUSTOMER' || newCat === 'ORDERS' || newCat === 'BOOKINGS' || newCat === 'MEMBERSHIP') autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_whatsapp_agent';
@@ -12816,7 +12819,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                         <option value="KYC">KYC</option>
                         <option value="PAYMENT">Payment</option>
                         <option value="REFERRAL_COMMISSION">Referral & Commission</option>
-                        <option value="REFUND">Refund</option>
+                        <option value="DISPUTE">Dispute Settlement</option>
                         <option value="SUPPORT">Support</option>
                         <option value="ESCALATION">Escalation</option>
                         <option value="COMMUNICATION">Communication</option>
@@ -12871,7 +12874,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             const toolNameLow = (newToolForm.name + ' ' + newToolForm.code).toLowerCase();
                             if (cat === 'SECURITY' || toolNameLow.includes('kyc') || toolNameLow.includes('document') || toolNameLow.includes('identity')) {
                               domainTL = 'KYC_TL';
-                            } else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('refund') || toolNameLow.includes('payout')) {
+                            } else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('dispute') || toolNameLow.includes('payout')) {
                               domainTL = 'PAYMENT_TL';
                             } else {
                               domainTL = 'QUERY_TL';
@@ -12915,7 +12918,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             const cat = newToolForm.category;
                             const toolNameLow = (newToolForm.name + ' ' + newToolForm.code).toLowerCase();
                             if (cat === 'SECURITY' || toolNameLow.includes('kyc') || toolNameLow.includes('document')) domainTL = 'KYC_TL';
-                            else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('refund')) domainTL = 'PAYMENT_TL';
+                            else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('dispute')) domainTL = 'PAYMENT_TL';
                             
                             setNewToolForm({
                               ...newToolForm,
@@ -13309,7 +13312,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             KYC: 'KYC',
                             PAYMENT: 'Payment',
                             REFERRAL_COMMISSION: 'Referral & Commission',
-                            REFUND: 'Refund',
+                            DISPUTE: 'Dispute Settlement',
                             SUPPORT: 'Support',
                             ESCALATION: 'Escalation',
                             COMMUNICATION: 'Communication',
@@ -13335,7 +13338,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                         <option value="KYC">KYC</option>
                         <option value="PAYMENT">Payment</option>
                         <option value="REFERRAL_COMMISSION">Referral & Commission</option>
-                        <option value="REFUND">Refund</option>
+                        <option value="DISPUTE">Dispute Settlement</option>
                         <option value="SUPPORT">Support</option>
                         <option value="ESCALATION">Escalation</option>
                         <option value="COMMUNICATION">Communication</option>
@@ -13389,7 +13392,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             const toolNameLow = (editingToolItem.name + ' ' + editingToolItem.code).toLowerCase();
                             if (cat === 'SECURITY' || toolNameLow.includes('kyc') || toolNameLow.includes('document') || toolNameLow.includes('identity')) {
                               domainTL = 'KYC_TL';
-                            } else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('refund') || toolNameLow.includes('payout')) {
+                            } else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('dispute') || toolNameLow.includes('payout')) {
                               domainTL = 'PAYMENT_TL';
                             } else {
                               domainTL = 'QUERY_TL';
@@ -13429,7 +13432,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             const cat = editingToolItem.category;
                             const toolNameLow = (editingToolItem.name + ' ' + editingToolItem.code).toLowerCase();
                             if (cat === 'SECURITY' || toolNameLow.includes('kyc') || toolNameLow.includes('document')) domainTL = 'KYC_TL';
-                            else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('refund')) domainTL = 'PAYMENT_TL';
+                            else if (cat === 'PAYMENT' || toolNameLow.includes('pay') || toolNameLow.includes('dispute')) domainTL = 'PAYMENT_TL';
 
                             setEditingToolItem({
                               ...editingToolItem,
@@ -16405,7 +16408,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <span className="text-emerald">{workflows.length}</span>
                 <span className="badge badge-success" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>6 CORE CATEGORIES</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Vendor, Agent, KYC, Payment, Refund, Escalation</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Vendor, Agent, KYC, Payment, Dispute, Escalation</div>
             </div>
 
             <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #06b6d4 0%, #38bdf8 100%)', '--kpi-hover-border': '#38bdf8' } as React.CSSProperties}>
@@ -16477,7 +16480,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <option value="AGENT">Agent Registration ({workflows.filter(w => w.category === 'AGENT').length})</option>
                 <option value="KYC">KYC Approval ({workflows.filter(w => w.category === 'KYC').length})</option>
                 <option value="PAYMENT">Payment Verification ({workflows.filter(w => w.category === 'PAYMENT').length})</option>
-                <option value="REFUND">Refund Process ({workflows.filter(w => w.category === 'REFUND').length})</option>
+                <option value="DISPUTE">Dispute Settlement ({workflows.filter(w => w.category === 'DISPUTE' ).length})</option>
                 <option value="ESCALATION">Escalation Process ({workflows.filter(w => w.category === 'ESCALATION').length})</option>
               </select>
 
@@ -16690,7 +16693,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 AGENT: 'Agent Registration',
                 KYC: 'KYC Approval',
                 PAYMENT: 'Payment Verification',
-                REFUND: 'Refund Process',
+                DISPUTE: 'Dispute Settlement',
                 ESCALATION: 'Escalation Process'
               };
 
@@ -16764,7 +16767,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                     <option value="AGENT">Agent Registration</option>
                     <option value="KYC">KYC Approval</option>
                     <option value="PAYMENT">Payment Verification</option>
-                    <option value="REFUND">Refund Process</option>
+                    <option value="DISPUTE">Dispute Settlement</option>
                     <option value="ESCALATION">Escalation Process</option>
                   </select>
                 </div>
@@ -18279,7 +18282,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   <CreditCard size={22} className="text-brand" /> Payment Operational Control Centre
                 </h3>
                 <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem', margin: 0 }}>
-                  Manage 7 payment views: Pending Payments, Successful Payments, Failed Payments, Payment Links, Receipts, Refunds, and Commission Ledger
+                  Manage 7 payment views: Pending Payments, Successful Payments, Failed Payments, Payment Links, Receipts, Dispute Settlements, and Commission Ledger
                 </p>
               </div>
 
@@ -18314,7 +18317,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   <option value="FAILED">Failed Payments ({paymentItems.filter(p => p.status === 'FAILED').length})</option>
                   <option value="PAYMENT_LINKS">Payment Links ({paymentItems.filter(p => p.paymentLink).length})</option>
                   <option value="RECEIPTS">Receipts ({paymentItems.filter(p => p.receipt).length})</option>
-                  <option value="REFUNDS">Refunds ({paymentItems.filter(p => p.refund).length})</option>
+                  <option value="DISPUTES">Dispute Settlements ({paymentItems.filter(p => p.refund || p.dispute).length})</option>
                   <option value="COMMISSION_LEDGER">Commission Ledger ({paymentItems.filter(p => p.commission).length})</option>
                 </select>
 
@@ -18503,38 +18506,38 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
               </div>
             )}
 
-            {/* VIEW 6: REFUNDS SUB-TAB VIEW */}
-            {paymentSubTab === 'REFUNDS' && (
+            {/* VIEW 6: DISPUTE SETTLEMENTS SUB-TAB VIEW */}
+            {paymentSubTab === 'DISPUTES' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {paymentItems.filter(p => p.refund).map(p => (
                   <div key={p.id} style={{ background: 'var(--bg-dark)', padding: '1.25rem', borderRadius: '10px', border: '1.5px solid var(--accent-warning)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <strong className="text-amber" style={{ fontSize: '1rem' }}>{p.refund?.refundId} — Gateway Refund Cleared</strong>
-                          <TicketVisionButton ticket={{ id: p.transactionRef, ticketNumber: p.transactionRef, customerName: p.customerName, departmentLabel: 'Payment Operations', status: 'REFUNDED' }} compact size="sm" />
+                          <strong className="text-amber" style={{ fontSize: '1rem' }}>{p.refund?.disputeId || p.refund?.refundId} — Dispute Settlement Cleared</strong>
+                          <TicketVisionButton ticket={{ id: p.transactionRef, ticketNumber: p.transactionRef, customerName: p.customerName, departmentLabel: 'Payment Operations', status: 'SETTLED' }} compact size="sm" />
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                           Original Txn: {p.transactionRef} • Customer: {p.customerName} ({p.customerEmail})
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>REFUND: ${p.refund?.refundAmount.toFixed(2)}</span>
+                        <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>SETTLEMENT: ${(p.refund?.settlementAmount || p.refund?.refundAmount || 149).toFixed(2)}</span>
                         <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{p.refund?.processedTimestamp}</div>
                       </div>
                     </div>
 
                     <div style={{ background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid var(--accent-warning)', padding: '0.85rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--text-main)' }}>
-                      <strong>Refund Cause & Approval:</strong> {p.refund?.reason} (Approved by: <strong>{p.refund?.approvedBy}</strong>)
+                      <strong>Dispute Settlement Cause & Approval:</strong> {p.refund?.reason} (Approved by: <strong>{p.refund?.approvedBy}</strong>)
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Stripe Refund Gateway Ref: <strong className="text-cyan">{p.refund?.gatewayRefundRef}</strong></span>
+                      <span style={{ color: 'var(--text-muted)' }}>Stripe Dispute Gateway Ref: <strong className="text-cyan">{p.refund?.gatewayDisputeRef || p.refund?.gatewayRefundRef}</strong></span>
                       <button 
                         className="btn btn-secondary" 
                         style={{ fontSize: '0.725rem', padding: '0.35rem 0.65rem' }}
                         onClick={() => {
-                          setUserFormNotification(`Re-synchronized Stripe Gateway Refund '${p.refund?.gatewayRefundRef}'. Status: SETTLED.`);
+                          setUserFormNotification(`Re-synchronized Stripe Gateway Dispute Settlement '${p.refund?.gatewayDisputeRef || p.refund?.gatewayRefundRef}'. Status: SETTLED.`);
                         }}
                       >
                         <RefreshCw size={12} /> Sync Gateway Status
@@ -23015,12 +23018,12 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Max Auto-Refunds Per Customer (Monthly Limit)</label>
+                  <label className="form-label">Max Auto-Dispute Settlements Per Customer (Monthly Limit)</label>
                   <input
                     type="number"
                     className="form-input"
-                    value={bizMaxRefundsPerMonth}
-                    onChange={e => setBizMaxRefundsPerMonth(e.target.value)}
+                    value={bizMaxDisputesPerMonth}
+                    onChange={e => setBizMaxDisputesPerMonth(e.target.value)}
                   />
                 </div>
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -23030,7 +23033,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                       checked={bizAutoApproveHighTrust}
                       onChange={e => setBizAutoApproveHighTrust(e.target.checked)}
                     />
-                    Enable Instant Refund Auto-Approvals for High-Trust Verified VIP Accounts
+                    Enable Instant Dispute Settlement Auto-Approvals for High-Trust Verified VIP Accounts
                   </label>
                 </div>
               </div>
@@ -23347,7 +23350,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 {[
                   { key: 'ENABLE_VOICE_AI', name: 'AI Voice Call Operations (Twilio Media Streams)', desc: 'Enables real-time voice call synthesis and listening' },
                   { key: 'ENABLE_WHATSAPP_BOT', name: 'Meta WhatsApp Business Bot Integration', desc: 'Allows automated responses via official WhatsApp Cloud API' },
-                  { key: 'ENABLE_AUTO_REFUNDS', name: 'Automated Stripe Payment Refund Execution', desc: 'Allows AI agents to execute direct Stripe refund charges' },
+                  { key: 'ENABLE_AUTO_SETTLEMENTS', name: 'Automated Stripe Payment Dispute Settlement Execution', desc: 'Allows AI agents to execute direct Stripe dispute settlements' },
                   { key: 'ENABLE_ADVANCED_KYC', name: 'Azure Cognitive Vision OCR Document Checks', desc: 'Runs document forgery blur detection on uploads' },
                   { key: 'ENABLE_REALTIME_METRICS', name: 'Live WebSockets Performance Stream', desc: 'Streams live metric telemetry to Super Admin panel' }
                 ].map(flag => (

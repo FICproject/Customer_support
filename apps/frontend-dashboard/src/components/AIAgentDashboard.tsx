@@ -96,7 +96,7 @@ const operatingSteps: OperatingStep[] = [
   {
     title: 'Retrieve Knowledge',
     desc: 'Fetches authorized FAQ and SOP guidelines from Vector Search (RAG) corresponding to the department\'s public knowledge boundaries.',
-    schema: '{\n  "rag_sources": ["cancellation_faq.pdf", "refund_sop_v2.md"],\n  "chunk_count": 2\n}'
+    schema: '{\n  "rag_sources": ["cancellation_faq.pdf", "billing_dispute_sop_v2.md"],\n  "chunk_count": 2\n}'
   },
   {
     title: 'Query Live Data',
@@ -233,7 +233,7 @@ export const AIAgentDashboard: React.FC<AIAgentDashboardProps> = ({ activeSubTab
       systemPrompt: 'ORDER-SUPPORT-SYSTEM-v3',
       deptPrompt: 'QUERY-DEPARTMENT-v2',
       escalationPrompt: 'ESCALATION-v4',
-      knowledgeAccess: ['Order FAQ', 'Order SOP', 'Cancellation Policy', 'Delivery Policy', 'Refund Policy', 'Membership Policy'],
+      knowledgeAccess: ['Order FAQ', 'Order SOP', 'Cancellation Policy', 'Delivery Policy', 'Billing & Dispute Policy', 'Membership Policy'],
       toolAccess: ['getOrder()', 'getOrderStatus()', 'getDeliveryStatus()', 'createSupportRequest()'],
       concurrencyLimit: 100,
       timeoutSec: 30,
@@ -265,7 +265,7 @@ export const AIAgentDashboard: React.FC<AIAgentDashboardProps> = ({ activeSubTab
       systemPrompt: 'BOOKING-SUPPORT-SYSTEM-v1',
       deptPrompt: 'QUERY-DEPARTMENT-v2',
       escalationPrompt: 'ESCALATION-v2',
-      knowledgeAccess: ['Booking cancellation guide', 'Travel refund matrix', 'VIP booking override list'],
+      knowledgeAccess: ['Booking cancellation guide', 'Travel cancellation matrix', 'VIP booking override list'],
       toolAccess: ['getBooking()', 'cancelBooking()', 'rescheduleBooking()'],
       concurrencyLimit: 100,
       timeoutSec: 30,
@@ -2019,7 +2019,7 @@ export const AIAgentDashboard: React.FC<AIAgentDashboardProps> = ({ activeSubTab
                     <input 
                       type="text" 
                       required
-                      placeholder="e.g. Refund Support Agent"
+                      placeholder="e.g. Billing Dispute Agent"
                       value={formAgentName}
                       onChange={(e) => setFormAgentName(e.target.value)}
                       style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px' }}
@@ -2030,7 +2030,7 @@ export const AIAgentDashboard: React.FC<AIAgentDashboardProps> = ({ activeSubTab
                     <input 
                       type="text" 
                       required
-                      placeholder="e.g. AI-QUERY-REFUND-001"
+                      placeholder="e.g. AI-QUERY-DISPUTE-001"
                       value={formAgentId}
                       onChange={(e) => setFormAgentId(e.target.value)}
                       style={{ width: '100%', padding: '0.5rem', background: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}
@@ -2814,8 +2814,8 @@ export const AIAgentDashboard: React.FC<AIAgentDashboardProps> = ({ activeSubTab
               </div>
             </div>
             <div className="glass-panel" style={{ padding: '1.5rem', borderTop: '4px solid var(--text-amber)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 900, marginBottom: '0.5rem' }}>Refund Policy Vault</h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '1rem' }}>Namespace: `kb_payment_refund`</span>
+              <h3 style={{ fontSize: '1rem', fontWeight: 900, marginBottom: '0.5rem' }}>Commercial Billing & Dispute Vault</h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '1rem' }}>Namespace: `kb_payment_dispute`</span>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
                 <span>15 chunks</span>
                 <span style={{ color: 'var(--accent-success)' }}>● SYNCED</span>

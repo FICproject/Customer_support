@@ -21,7 +21,7 @@ router.post('/:ticketId/override', (req, res) => {
   const { ticketId } = req.params;
   const { teamLeadId, overrideNote, newStatus } = req.body;
 
-  let ticket = store.tickets.get(ticketId) || Array.from(store.tickets.values()).find(t => t.id?.toLowerCase() === ticketId?.toLowerCase() || t.ticketNumber?.toLowerCase() === ticketId?.toLowerCase());
+  let ticket: any = store.tickets.get(ticketId) || Array.from(store.tickets.values()).find(t => t.id?.toLowerCase() === ticketId?.toLowerCase() || t.ticketNumber?.toLowerCase() === ticketId?.toLowerCase());
   if (!ticket) {
     ticket = {
       id: ticketId,

@@ -49,7 +49,10 @@ import {
   UsersRound,
   LayoutDashboard,
   Video,
-  UserCheck
+  UserCheck,
+  Mail,
+  PhoneCall,
+  Send
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -506,9 +509,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
 
             <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>MULTI-CHANNEL & WORKFLOWS</div>
-            <button className={`sidebar-nav-item ${activeSubTab === 'CHANNELS' ? 'active' : ''}`} onClick={() => onSelectSubTab('CHANNELS')}>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
               <MessageSquare size={16} />
-              <span>Multi-Channel Stream</span>
+              <span>Live Chat</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
+              <Phone size={16} />
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
+              <Smartphone size={16} />
+              <span>WhatsApp</span>
             </button>
             <button className={`sidebar-nav-item ${activeSubTab === 'WORKFLOW_TIMELINE' ? 'active' : ''}`} onClick={() => onSelectSubTab('WORKFLOW_TIMELINE')}>
               <Clock size={16} />
@@ -562,7 +577,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span>AI KYC Agent Pipeline</span>
             </button>
 
-            <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>WORKFLOWS & ESCALATIONS</div>
+            <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>MULTI-CHANNEL & WORKFLOWS</div>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
+              <MessageSquare size={16} />
+              <span>Live Chat</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
+              <Phone size={16} />
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
+              <Smartphone size={16} />
+              <span>WhatsApp</span>
+            </button>
             <button className={`sidebar-nav-item ${activeSubTab === 'WORKFLOW_TIMELINE' ? 'active' : ''}`} onClick={() => onSelectSubTab('WORKFLOW_TIMELINE')}>
               <Clock size={16} />
               <span>KYC Timeline & History</span>
@@ -617,6 +648,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button className={`sidebar-nav-item ${activeSubTab === 'HUMAN_OFFICER_MONITOR' ? 'active' : ''}`} onClick={() => onSelectSubTab('HUMAN_OFFICER_MONITOR')}>
               <UserCheck size={16} />
               <span>Payment Human Officer Operations & Live Workforce Intelligence Center</span>
+            </button>
+
+            <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>MULTI-CHANNEL & WORKFLOWS</div>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
+              <MessageSquare size={16} />
+              <span>Live Chat</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
+              <Phone size={16} />
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
+              <Smartphone size={16} />
+              <span>WhatsApp</span>
             </button>
 
             <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>REVENUE & ESCALATIONS</div>
@@ -681,13 +730,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
 
             <div className="nav-group-title">TELEPHONY & COMMUNICATIONS</div>
-            <button className={`sidebar-nav-item ${activeSubTab === 'CALL_DIALER' ? 'active' : ''}`} onClick={() => onSelectSubTab('CALL_DIALER')}>
-              <Phone size={16} />
-              <span>Outbound Voice Calling & Dialpad</span>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
+              <MessageSquare size={16} />
+              <span>Live Chat</span>
             </button>
-            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP_SMS_DISPATCH' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP_SMS_DISPATCH')}>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
+              <Phone size={16} />
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
               <Smartphone size={16} />
-              <span>WhatsApp & SMS Quick Dispatch</span>
+              <span>WhatsApp</span>
             </button>
 
             <div className="nav-group-title">METRICS & PERFORMANCE</div>
@@ -722,9 +779,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <FileText size={16} />
               <span>Blur & Quality Override Desk</span>
             </button>
-            <button className={`sidebar-nav-item ${activeSubTab === 'CALL_DIALER' || activeSubTab === 'APPLICANT_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('CALL_DIALER')}>
+            <div className="nav-group-title">TELEPHONY & COMMUNICATIONS</div>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
+              <MessageSquare size={16} />
+              <span>Live Chat</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
               <Phone size={16} />
-              <span>Direct Call to Registerer</span>
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
+              <Smartphone size={16} />
+              <span>WhatsApp</span>
             </button>
             <button className={`sidebar-nav-item ${activeSubTab === 'CUSTOMER_LOOKUP' || activeSubTab === 'TRACKING_DETAILS' || activeSubTab === 'KYC_ARCHIVE_SEARCH' ? 'active' : ''}`} onClick={() => onSelectSubTab('CUSTOMER_LOOKUP')}>
               <Search size={16} />
@@ -763,9 +833,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <AlertTriangle size={16} />
               <span>Payment Escalation Desk</span>
             </button>
-            <button className={`sidebar-nav-item ${activeSubTab === 'PAYMENT_REMINDERS' || activeSubTab === 'CALL_DIALER' ? 'active' : ''}`} onClick={() => onSelectSubTab('PAYMENT_REMINDERS')}>
+            <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>TELEPHONY & COMMUNICATIONS</div>
+            <button className={`sidebar-nav-item ${activeSubTab === 'LIVE_CHAT' ? 'active' : ''}`} onClick={() => onSelectSubTab('LIVE_CHAT')}>
+              <MessageSquare size={16} />
+              <span>Live Chat</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'INBOUND_CALLS' ? 'active' : ''}`} onClick={() => onSelectSubTab('INBOUND_CALLS')}>
               <Phone size={16} />
-              <span>Manual Voice Reminders & Calls</span>
+              <span>Inbound Calls</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'EMAIL_INBOX' ? 'active' : ''}`} onClick={() => onSelectSubTab('EMAIL_INBOX')}>
+              <Mail size={16} />
+              <span>Email Inbox</span>
+            </button>
+            <button className={`sidebar-nav-item ${activeSubTab === 'WHATSAPP' ? 'active' : ''}`} onClick={() => onSelectSubTab('WHATSAPP')}>
+              <Smartphone size={16} />
+              <span>WhatsApp</span>
             </button>
 
             <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>RECONCILIATION & AUDIT</div>

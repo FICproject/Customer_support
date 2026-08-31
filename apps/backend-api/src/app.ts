@@ -11,6 +11,7 @@ import { workflowRoutes } from './routes/workflows.routes';
 import { analyticsRoutes } from './routes/analytics.routes';
 import { telephonyRoutes } from './routes/telephony.routes';
 import { departmentsRoutes } from './routes/departments.routes';
+import { communicationRoutes } from './routes/communication.routes';
 import { MonitoringAgent } from './ai/agents/MonitoringAgent';
 import { AuditService } from './services/AuditService';
 import { MongoClient } from './db/mongoClient';
@@ -50,6 +51,7 @@ app.use('/api/v1/workflows', workflowRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/telephony', telephonyRoutes);
 app.use('/api/v1/departments', departmentsRoutes);
+app.use('/api/v1/communication', communicationRoutes);
 
 // Server-Sent Events (SSE) for Real-Time Dashboard Live Stream
 app.get('/api/v1/live-stream', (req, res) => {
