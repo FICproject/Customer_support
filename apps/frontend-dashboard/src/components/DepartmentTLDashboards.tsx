@@ -14556,7 +14556,7 @@ export const DepartmentTLDashboards: React.FC<DepartmentTLProps> = ({ role, acti
                   />
                 </div>
 
-                {/* 4-Tier Agent Onboarding Fee Matrix (Super Admin & Payment TL Controlled) */}
+                {/* 4-Tier Agent Onboarding Fee Matrix (Support Admin & Payment TL Controlled) */}
                 <div style={{ padding: '1rem', background: 'var(--bg-dark)', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '0.5rem' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-brand)', marginBottom: '0.35rem' }}>
                     4-Tier Agent Onboarding Registration Fee Matrix

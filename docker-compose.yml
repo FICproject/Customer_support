@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. MongoDB Service (Operational DB)
   mongodb:
@@ -30,6 +28,8 @@ services:
       dockerfile: apps/backend-api/Dockerfile
     container_name: ai_customer_support_backend
     restart: always
+    env_file:
+      - apps/backend-api/.env
     ports:
       - "4000:4000"
     environment:

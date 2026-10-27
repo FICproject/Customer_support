@@ -87,11 +87,11 @@ router.post('/', validateBody(RegisterAIAgentSchema), async (req, res) => {
     // Always update in-memory store
     store.aiOrchestratorAgents.set(newAgent.id, newAgent);
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       action: 'REGISTER_AI_AGENT',
       inputPayload: { agentName: newAgent.name, agentCode: newAgent.code },
       outputResult: { id: newAgent.id },
-      decisionReasoning: 'Super Admin registered a new AI micro-agent inside Orchestrator Command Center.',
+      decisionReasoning: 'Support Admin registered a new AI micro-agent inside Orchestrator Command Center.',
       validationPassed: true,
       isHuman: true
     });
@@ -125,11 +125,11 @@ router.put('/:id', validateBody(UpdateAIAgentSchema), async (req, res) => {
     // Always update in-memory store
     store.aiOrchestratorAgents.set(id, updated);
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       action: 'UPDATE_AI_AGENT',
       inputPayload: { id, name, category, promptVersion },
       outputResult: updated,
-      decisionReasoning: 'Super Admin updated micro-agent configuration properties.',
+      decisionReasoning: 'Support Admin updated micro-agent configuration properties.',
       validationPassed: true,
       isHuman: true
     });
@@ -171,11 +171,11 @@ router.delete('/:id', async (req, res) => {
     }
 
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       action: 'DELETE_AI_AGENT',
       inputPayload: { id },
       outputResult: { deleted: true },
-      decisionReasoning: 'Super Admin deleted a micro-agent from Orchestrator Command Center.',
+      decisionReasoning: 'Support Admin deleted a micro-agent from Orchestrator Command Center.',
       validationPassed: true,
       isHuman: true
     });
@@ -288,7 +288,7 @@ router.post('/flush-buffers', async (req, res) => {
       store.aiOrchestratorAgents.set(id, agent);
     }
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       action: 'FLUSH_AI_TOKEN_BUFFERS',
       inputPayload: {},
       outputResult: { status: 'FLUSHED', timestamp: new Date().toISOString() },
@@ -316,11 +316,11 @@ router.post('/restart-all', async (req, res) => {
       await db.collection('ai_agents').updateMany({}, { $set: { status: 'ONLINE', healthPercent: 100, queueLength: 0 } });
     }
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       action: 'RESTART_ALL_AI_AGENTS',
       inputPayload: {},
       outputResult: { restartedCount: store.aiOrchestratorAgents.size },
-      decisionReasoning: 'Super Admin executed global lifecycle restart for all AI micro-agents.',
+      decisionReasoning: 'Support Admin executed global lifecycle restart for all AI micro-agents.',
       validationPassed: true,
       isHuman: true
     });

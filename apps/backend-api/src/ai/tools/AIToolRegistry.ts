@@ -367,7 +367,7 @@ export const toolArgumentSchemas: Record<string, z.ZodSchema> = {
   'addTicketMessage': z.object({
     ticketId: z.string().min(1, 'ticketId is required'),
     sender: z.string().min(1, 'sender is required'),
-    senderRole: z.enum(['CUSTOMER', 'AI_AGENT', 'HUMAN_AGENT', 'TEAM_LEAD', 'SUPER_ADMIN']).default('AI_AGENT'),
+    senderRole: z.enum(['CUSTOMER', 'AI_AGENT', 'HUMAN_AGENT', 'TEAM_LEAD', 'SUPPORT_ADMIN', 'SUPER_ADMIN']).default('AI_AGENT'),
     message: z.string().min(1, 'message is required'),
     attachments: z.array(z.string()).optional()
   }),
@@ -2446,7 +2446,7 @@ AIToolRegistry.registerTool({
   toolId: 'TOOL-ESC-03',
   name: 'assignToTeamLead',
   category: AIToolCategory.ESCALATION,
-  description: 'Route escalation directly to domain supervisor (Query TL, KYC TL, Payment TL, or Super Admin).',
+  description: 'Route escalation directly to domain supervisor (Query TL, KYC TL, Payment TL, or Support Admin).',
   department: Department.QUERY,
   owner: 'ESCALATION_TEAM',
   version: '1.0.0',

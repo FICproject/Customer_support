@@ -7,11 +7,11 @@ export class HumanAIGovernanceService {
   static getHumanAIGovernanceMappings(): HumanAIGovernanceMapping[] {
     return [
       {
-        humanRole: 'SUPER_ADMIN',
-        roleTitle: 'Super Administrator',
+        humanRole: 'SUPPORT_ADMIN',
+        roleTitle: 'Support Administrator',
         governsAITeam: 'Entire Enterprise AI Workforce (Layer 1, Layer 2, Layer 3)',
         governanceResponsibility: 'Full system platform control, model selection, tool security policy creation, worker activation/deactivation',
-        escalationTargetQueue: 'queue.escalation.super_admin',
+        escalationTargetQueue: 'queue.escalation.support_admin',
         auditAuthorityLevel: 'UNLIMITED'
       },
       {

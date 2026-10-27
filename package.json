@@ -22,8 +22,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "mongodb": "^7.6.0"
-  }
+  "license": "ISC"
 }

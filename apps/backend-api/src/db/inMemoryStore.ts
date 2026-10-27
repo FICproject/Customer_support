@@ -27,11 +27,13 @@ import {
   RequesterType,
   AIAgentClassification,
   AIRiskLevel,
-  AIRuntimeAvailability
+  AIRuntimeAvailability,
+  StakeholderRequest
 } from '../types';
 
 class InMemoryStore {
   public users: Map<string, UserProfile> = new Map();
+  public stakeholderRequests: Map<string, StakeholderRequest> = new Map();
   public departments: Map<string, DepartmentConfig> = new Map();
   public orders: Map<string, OrderItem[]> = new Map();
   public tickets: Map<string, Ticket> = new Map();
@@ -75,16 +77,17 @@ class InMemoryStore {
     this.seedInitialTicketsAndOps();
     this.seedAuditLogs();
     this.seedTelephonyCallRecords();
+    this.seedStakeholderRequests();
   }
 
   private seedUsers() {
     const defaultUsers: UserProfile[] = [
       {
-        id: 'usr-superadmin',
+        id: 'usr-supportadmin',
         name: 'Alexander Vance',
-        email: 'superadmin@enterpriseai.com',
+        email: 'supportadmin@enterpriseai.com',
         phone: '+1-800-555-0100',
-        role: UserRole.SUPER_ADMIN,
+        role: UserRole.SUPPORT_ADMIN,
         userType: UserType.INTERNAL,
         createdAt: new Date().toISOString()
       },
@@ -194,6 +197,8 @@ class InMemoryStore {
     ];
 
     defaultUsers.forEach(u => this.users.set(u.id, u));
+    const supportUser = this.users.get('usr-supportadmin');
+    if (supportUser) this.users.set('usr-superadmin', supportUser);
   }
 
   private seedOrders() {
@@ -611,8 +616,8 @@ class InMemoryStore {
         classification: AIAgentClassification.ORCHESTRATOR,
         layer: AIWorkforceLayer.ORCHESTRATOR,
         department: Department.SYSTEM,
-        reportsToHumanRole: UserRole.SUPER_ADMIN,
-        assignedHumanTLId: 'usr-superadmin',
+        reportsToHumanRole: UserRole.SUPPORT_ADMIN,
+        assignedHumanTLId: 'usr-supportadmin',
         status: 'ACTIVE',
         lifecycleStatus: AILifecycleStatus.ACTIVE,
         runtimeAvailability: AIRuntimeAvailability.AVAILABLE,
@@ -1335,7 +1340,7 @@ class InMemoryStore {
         classification: AIAgentClassification.CONTROL_AGENT,
         layer: AIWorkforceLayer.SPECIALIZED,
         department: Department.SYSTEM,
-        reportsToHumanRole: UserRole.SUPER_ADMIN,
+        reportsToHumanRole: UserRole.SUPPORT_ADMIN,
         status: 'ACTIVE',
         lifecycleStatus: AILifecycleStatus.ACTIVE,
         runtimeAvailability: AIRuntimeAvailability.AVAILABLE,
@@ -1905,6 +1910,314 @@ class InMemoryStore {
       this.telephonyCallRecords.set(rec.callSid, rec);
       this.telephonyCallRecords.set(rec.id, rec);
     });
+  }
+
+  private seedStakeholderRequests() {
+    const defaultRequests: StakeholderRequest[] = [
+      {
+        id: 'REQ-VND-8801',
+        stakeholderType: 'VENDOR',
+        category: 'NEW_ONBOARDING',
+        title: 'New Franchise Wholesale Vendor Onboarding',
+        description: 'New pharmacy & general store franchise registration submitted for Coimbatore Central zone. Awaiting trade license & agreement sign-off.',
+        entityName: 'Apex Health Wholesale & Pharma Hub',
+        contactPerson: 'K. R. Natarajan',
+        phone: '+91 98421 77312',
+        email: 'natarajan@apexwholesaleco.com',
+        location: 'Coimbatore, Tamil Nadu',
+        status: 'PENDING_REVIEW',
+        priority: 'HIGH',
+        submittedAt: 'Today, 10:20 AM',
+        slaMinutesRemaining: 45,
+        amount: '₹25,000 (Franchise Security Deposit)',
+        documents: [
+          { name: 'Trade_License_2026.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'GSTIN_Registration.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'Store_Front_Photo.jpg', type: 'IMAGE', status: 'VALID' }
+        ],
+        auditNotes: 'AI OCR verified GSTIN with government portal (Active). Initial deposit verification pending.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-VND-8802',
+        stakeholderType: 'VENDOR',
+        category: 'DOCUMENT_ISSUE',
+        title: 'FSSAI License Renewal Blur Detected',
+        description: 'Post-onboarding annual food safety compliance re-verification. Uploaded FSSAI certificate has glare on license registration number.',
+        entityName: 'Sri Krishna Foods & Confectionery',
+        contactPerson: 'S. Ramanathan',
+        phone: '+91 94432 11982',
+        email: 'ramanathan@krishnafoods.in',
+        location: 'Madurai, Tamil Nadu',
+        status: 'REUPLOAD_REQUESTED',
+        priority: 'HIGH',
+        submittedAt: 'Today, 09:15 AM',
+        slaMinutesRemaining: 90,
+        documents: [
+          { name: 'FSSAI_Certificate_Scan.jpg', type: 'IMAGE', status: 'BLURRY' },
+          { name: 'PAN_Card.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'AI Vision model detected OCR confidence 41% on License No field. WhatsApp re-upload prompt sent.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-VND-8803',
+        stakeholderType: 'VENDOR',
+        category: 'PAYMENT_ISSUE',
+        title: 'Bi-Weekly Settlement Payout Webhook Failure',
+        description: 'Vendor bi-weekly store collection disbursement of ₹48,500 timed out on Razorpay settlement route due to beneficiary IFSC update.',
+        entityName: 'Metro Hardware & Electricals',
+        contactPerson: 'Deepak Varma',
+        phone: '+91 98840 55104',
+        email: 'accounts@metrohardware.com',
+        location: 'Chennai, Tamil Nadu',
+        status: 'PAYMENT_PENDING',
+        priority: 'CRITICAL',
+        submittedAt: 'Today, 08:40 AM',
+        slaMinutesRemaining: 25,
+        amount: '₹48,500 (Vendor Payout)',
+        utrNumber: 'RAZ-FAIL-99410',
+        documents: [
+          { name: 'Bank_Passbook_Updated.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'Settlement_Statement.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'New IFSC HDFC0001234 verified. Awaiting Support Admin manual authorization to trigger secondary payout gateway.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-AGT-4401',
+        stakeholderType: 'AGENT',
+        category: 'NEW_ONBOARDING',
+        title: 'New District Field Tie-Up Agent Registration',
+        description: 'Agent application received for Salem district coverage. Security deposit of ₹1,500 verified via Razorpay dynamic link.',
+        entityName: 'Salem Pincode Connect Services',
+        contactPerson: 'M. Kavitha',
+        phone: '+91 97890 23411',
+        email: 'kavitha.agent@gmail.com',
+        location: 'Salem, Tamil Nadu',
+        status: 'PENDING_REVIEW',
+        priority: 'NORMAL',
+        submittedAt: 'Today, 11:00 AM',
+        slaMinutesRemaining: 75,
+        amount: '₹1,500 (District Onboarding Fee)',
+        utrNumber: 'UPI-20260730-8819',
+        documents: [
+          { name: 'Aadhaar_Front_Back.jpg', type: 'IMAGE', status: 'VALID' },
+          { name: 'PAN_Card_Copy.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'Cancelled_Cheque.jpg', type: 'IMAGE', status: 'VALID' }
+        ],
+        auditNotes: 'Payment verified. Background address check matched Aadhaar records. Ready for final activation.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-AGT-4402',
+        stakeholderType: 'AGENT',
+        category: 'DOCUMENT_ISSUE',
+        title: 'Aadhaar XML Re-Verification Due to Name Mismatch',
+        description: 'Post-onboarding KYC periodic audit. Agent PAN name (Kavitha Murugesan) does not match bank passbook name (M. Kavitha).',
+        entityName: 'Erode Tier-2 Agent Network',
+        contactPerson: 'Kavitha Murugesan',
+        phone: '+91 97890 99881',
+        email: 'kavitha.m@agentservice.ai',
+        location: 'Erode, Tamil Nadu',
+        status: 'REUPLOAD_REQUESTED',
+        priority: 'HIGH',
+        submittedAt: 'Today, 10:45 AM',
+        slaMinutesRemaining: 55,
+        documents: [
+          { name: 'Bank_Statement_Fresh.pdf', type: 'PDF', status: 'MISSING' },
+          { name: 'Name_Affidavit.pdf', type: 'PDF', status: 'PENDING' }
+        ],
+        auditNotes: 'Automated notification dispatched requesting notarized one-and-the-same person affidavit or bank endorsement.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-AGT-4403',
+        stakeholderType: 'AGENT',
+        category: 'PAYMENT_ISSUE',
+        title: 'Field Referral Commission Batch ₹8,400 Re-Credit Request',
+        description: 'Automated commission batch transfer failed for 6 merchant onboardings. Agent wallet credit pending manual release.',
+        entityName: 'Tirupur Textile Hub Agency',
+        contactPerson: 'Suresh Kumar',
+        phone: '+91 94420 33441',
+        email: 'suresh.textiles@gmail.com',
+        location: 'Tirupur, Tamil Nadu',
+        status: 'PAYMENT_PENDING',
+        priority: 'HIGH',
+        submittedAt: 'Today, 09:30 AM',
+        slaMinutesRemaining: 35,
+        amount: '₹8,400 (6x ₹1,400 Referral Commission)',
+        utrNumber: 'BATCH-COMM-4412',
+        documents: [
+          { name: 'Commission_Summary_July.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'All 6 merchants active and verified. Awaiting payout release authorization by Support Admin.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-MGR-2101',
+        stakeholderType: 'MANAGER',
+        category: 'NEW_ONBOARDING',
+        title: 'Regional Operations Manager Profile & Credential Onboarding',
+        description: 'New Territory Manager joining South Zone. Requires access permissions to Query, KYC & Payment supervision dashboards.',
+        entityName: 'South Zone Regional Operations Desk',
+        contactPerson: 'Ramesh Sundaram (Regional Manager)',
+        phone: '+91 98401 22990',
+        email: 'ramesh.sundaram@enterprise.ai',
+        location: 'Madurai Regional HQ',
+        status: 'PENDING_REVIEW',
+        priority: 'CRITICAL',
+        submittedAt: 'Today, 08:30 AM',
+        slaMinutesRemaining: 20,
+        documents: [
+          { name: 'Appointment_Letter.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'NDA_Signed_Copy.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'HR onboarding completed. Support Admin role privilege approval needed to grant operational dashboard access.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-SUB-1001',
+        stakeholderType: 'SUBADMIN',
+        category: 'NEW_ONBOARDING',
+        title: 'Western Regional Subadmin Account Creation',
+        description: 'Onboarding of Zonal Subadmin for Coimbatore & Nilgiris territory with restricted audit and dispute override rights.',
+        entityName: 'Western Zone Administration Desk',
+        contactPerson: 'Venkatesh Rao (Zonal Subadmin)',
+        phone: '+91 99940 11223',
+        email: 'venkatesh.subadmin@enterprise.ai',
+        location: 'Coimbatore, Tamil Nadu',
+        status: 'PENDING_REVIEW',
+        priority: 'CRITICAL',
+        submittedAt: 'Today, 09:00 AM',
+        slaMinutesRemaining: 30,
+        documents: [
+          { name: 'Security_Clearance_Check.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'IP_Whitelist_Request.txt', type: 'TEXT', status: 'VALID' }
+        ],
+        auditNotes: 'Dedicated static IP 182.72.10.45 mapped. Requires Support Admin token issuance.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-DEL-9101',
+        stakeholderType: 'DELIVERY_PARTNER',
+        category: 'NEW_ONBOARDING',
+        title: 'New Two-Wheeler Delivery Partner Registration',
+        description: 'New rider registration for last-mile customer document pick-up and KYC biometrics verification kit delivery.',
+        entityName: 'Express Last-Mile Fleet',
+        contactPerson: 'P. Murugan (Rider)',
+        phone: '+91 96290 44551',
+        email: 'murugan.express99@gmail.com',
+        location: 'Tambaram, Chennai',
+        status: 'PENDING_REVIEW',
+        priority: 'HIGH',
+        submittedAt: 'Today, 11:15 AM',
+        slaMinutesRemaining: 50,
+        amount: '₹500 (Delivery Partner Kit Security Deposit)',
+        utrNumber: 'UPI-20260730-9942',
+        documents: [
+          { name: 'Driving_License_Front_Back.jpg', type: 'IMAGE', status: 'VALID' },
+          { name: 'Two_Wheeler_RC_Copy.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'Vehicle_Insurance_2026.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'Vehicle insurance and driving license verified against Sarathi portal. Security deposit received.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-TECH-3201',
+        stakeholderType: 'TECHNICIAN',
+        category: 'NEW_ONBOARDING',
+        title: 'Hardware & Biometrics Field Technician Onboarding',
+        description: 'Certified technician registration for installing POS terminals, biometric fingerprint scanners & CCTV for vendors.',
+        entityName: 'Precision Tech Services',
+        contactPerson: 'R. Senthil Kumar',
+        phone: '+91 98430 77112',
+        email: 'senthil.tech@precisiontech.in',
+        location: 'Tirunelveli, Tamil Nadu',
+        status: 'PENDING_REVIEW',
+        priority: 'HIGH',
+        submittedAt: 'Today, 10:30 AM',
+        slaMinutesRemaining: 60,
+        amount: '₹1,000 (Technician Toolkit Escrow Deposit)',
+        utrNumber: 'RAZ-TECH-7719',
+        documents: [
+          { name: 'ITI_Diploma_Certificate.pdf', type: 'PDF', status: 'VALID' },
+          { name: 'Aadhaar_Card.jpg', type: 'IMAGE', status: 'VALID' },
+          { name: 'Police_Clearance_Certificate.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'Police clearance verified. Toolkit dispatch awaiting Support Admin final approval.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-KYC-7701',
+        stakeholderType: 'KYC',
+        category: 'DOCUMENT_ISSUE',
+        title: 'Severe OCR Glare on Passport Address Page (High Risk Vendor)',
+        description: 'KYC AI Agent flagged 43% blur on address section of Passport during Vendor Gold Tier onboarding. Manual inspector review needed.',
+        entityName: 'Global Exim Merchants',
+        contactPerson: 'Farhan Akhtar',
+        phone: '+91 98841 00293',
+        email: 'farhan@globalexim.com',
+        location: 'Chennai Port Area',
+        status: 'PENDING_REVIEW',
+        priority: 'CRITICAL',
+        submittedAt: 'Today, 11:25 AM',
+        slaMinutesRemaining: 15,
+        documents: [
+          { name: 'Passport_Address_Page.jpg', type: 'IMAGE', status: 'BLURRY' },
+          { name: 'Utility_Bill_Electricity.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'Secondary electricity bill address matches registered trade premise. Can approve with secondary proof.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-PAY-5501',
+        stakeholderType: 'PAYMENT',
+        category: 'PAYMENT_ISSUE',
+        title: 'Duplicate Onboarding Fee ₹1,500 Charged to Agent — Immediate Refund',
+        description: 'Agent bank account debited twice during UPI payment network timeout on July 29. Bank UTR reference parity confirmed.',
+        entityName: 'Vellore District Agent Desk',
+        contactPerson: 'G. Saravanan',
+        phone: '+91 94441 55667',
+        email: 'saravanan.agent@gmail.com',
+        location: 'Vellore, Tamil Nadu',
+        status: 'PAYMENT_PENDING',
+        priority: 'CRITICAL',
+        submittedAt: 'Today, 08:20 AM',
+        slaMinutesRemaining: 10,
+        amount: '₹1,500 (Duplicate UPI Refund)',
+        utrNumber: 'UPI-REF-20260729-11',
+        documents: [
+          { name: 'Bank_Debit_SMS_Proof.jpg', type: 'IMAGE', status: 'VALID' },
+          { name: 'Razorpay_Double_Charge_Log.json', type: 'TEXT', status: 'VALID' }
+        ],
+        auditNotes: 'Razorpay confirms double authorization. Requires Support Admin one-click refund trigger to initiate instant reversal.',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'REQ-QRY-1101',
+        stakeholderType: 'QUERIES',
+        category: 'QUERY',
+        title: 'Pincode Jurisdiction Dispute Between Agent & Vendor',
+        description: 'Vendor located on boundary between Pincode 600042 and 600091 assigned to wrong agent. Requires territory override.',
+        entityName: 'Metro South Retail Syndicate',
+        contactPerson: 'Rajeshwari M.',
+        phone: '+91 98402 33119',
+        email: 'rajeshwari.retail@gmail.com',
+        location: 'Velachery / Madipakkam Border, Chennai',
+        status: 'PENDING_REVIEW',
+        priority: 'HIGH',
+        submittedAt: 'Today, 09:10 AM',
+        slaMinutesRemaining: 40,
+        documents: [
+          { name: 'Territory_Map_GIS.pdf', type: 'PDF', status: 'VALID' }
+        ],
+        auditNotes: 'Query TL Alex Vance reviewed. Recommended Support Admin re-assign commission routing to Pincode 600042.',
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    defaultRequests.forEach(req => this.stakeholderRequests.set(req.id, req));
   }
 }
 

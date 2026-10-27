@@ -1,19 +1,26 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json tsconfig.json ./
-COPY apps/frontend-dashboard/package.json ./apps/frontend-dashboard/
+# Copy dashboard package and config files
+COPY apps/frontend-dashboard/package*.json ./
+COPY apps/frontend-dashboard/tsconfig*.json ./
+COPY apps/frontend-dashboard/vite.config.ts ./
+COPY apps/frontend-dashboard/index.html ./
 
-RUN npm ci
+# Install frontend dependencies
+RUN npm install
 
-COPY apps/frontend-dashboard ./apps/frontend-dashboard
+# Copy frontend source code and public assets
+COPY apps/frontend-dashboard/src ./src
+COPY apps/frontend-dashboard/public ./public
 
-RUN npm --prefix apps/frontend-dashboard run build
+# Build Vite production bundle
+RUN npm run build
 
 FROM nginx:alpine AS runner
 
-COPY --from=builder /app/apps/frontend-dashboard/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY apps/frontend-dashboard/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

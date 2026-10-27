@@ -1,4 +1,5 @@
 export enum UserRole {
+  SUPPORT_ADMIN = 'SUPPORT_ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   QUERIES_TL = 'QUERIES_TL',
@@ -160,6 +161,7 @@ export enum HumanEscalationTarget {
   KYC_TL = 'KYC_TL',
   PAYMENT_TL = 'PAYMENT_TL',
   ADMIN = 'ADMIN',
+  SUPPORT_ADMIN = 'SUPPORT_ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN'
 }
 
@@ -626,6 +628,7 @@ export enum AnalyticsTimeframe {
 }
 
 export enum ControlCenterRoleScope {
+  SUPPORT_ADMIN_GLOBAL = 'SUPPORT_ADMIN_GLOBAL',
   SUPER_ADMIN_GLOBAL = 'SUPER_ADMIN_GLOBAL',
   ADMIN_OPERATIONAL = 'ADMIN_OPERATIONAL',
   QUERY_TL_DEPT = 'QUERY_TL_DEPT',
@@ -1361,13 +1364,13 @@ export enum AIWorkforceControlPermission {
 }
 
 export interface HumanRoleControlScope {
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL';
+  role: 'SUPPORT_ADMIN' | 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL';
   departmentScope?: Department;
   allowedPermissions: AIWorkforceControlPermission[];
 }
 
 export interface HumanAIGovernanceMapping {
-  humanRole: 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL';
+  humanRole: 'SUPPORT_ADMIN' | 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL';
   roleTitle: string;
   governsAITeam: string; // e.g. "Query AI Department", "KYC AI Department"
   governanceResponsibility: string;
@@ -1474,7 +1477,7 @@ export interface AIWorkforceAgentNode {
   classification: AIAgentClassification;
   layer: AIWorkforceLayer;
   department: Department;
-  reportsToHumanRole: UserRole; // Maps AI Department Agent to Human TL (e.g. KYC_AI -> KYC_TL, SUPER_ADMIN)
+  reportsToHumanRole: UserRole; // Maps AI Department Agent to Human TL (e.g. KYC_AI -> KYC_TL, SUPPORT_ADMIN)
   assignedHumanTLId?: string;
   status: 'ACTIVE' | 'PROCESSING' | 'IDLE' | 'ALERT';
   lifecycleStatus: AILifecycleStatus;
@@ -1681,7 +1684,7 @@ export interface AIAgentState {
 export interface AuditLogEntry {
   id: string;
   timestamp: string;
-  actor: string; // e.g., 'AI_ORCHESTRATOR', 'AI_KYC_AGENT', 'SUPER_ADMIN'
+  actor: string; // e.g., 'AI_ORCHESTRATOR', 'AI_KYC_AGENT', 'SUPPORT_ADMIN'
   agentType?: AIAgentType;
   action: string;
   ticketId?: string;
@@ -1756,3 +1759,312 @@ export interface DepartmentConfig {
   warningThresholdPercent: number;
   autoEscalateOnBreach: boolean;
 }
+
+export type StakeholderType =
+  | 'VENDOR'
+  | 'AGENT'
+  | 'MANAGER'
+  | 'SUBADMIN'
+  | 'DELIVERY_PARTNER'
+  | 'TECHNICIAN'
+  | 'SUPPORT_STAFF'
+  | 'KYC'
+  | 'PAYMENT'
+  | 'QUERIES';
+
+export type StakeholderRequestCategory =
+  | 'NEW_ONBOARDING'
+  | 'DOCUMENT_ISSUE'
+  | 'PAYMENT_ISSUE'
+  | 'QUERY';
+
+export type StakeholderRequestStatus =
+  | 'PENDING_REVIEW'
+  | 'REUPLOAD_REQUESTED'
+  | 'PAYMENT_PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ESCALATED';
+
+export interface StakeholderRequestDocument {
+  name: string;
+  type: string;
+  status: 'VALID' | 'BLURRY' | 'EXPIRED' | 'MISSING' | 'PENDING';
+}
+
+export interface StakeholderRequest {
+  id: string;
+  stakeholderType: StakeholderType;
+  category: StakeholderRequestCategory;
+  title: string;
+  description: string;
+  entityName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  location: string;
+  status: StakeholderRequestStatus;
+  priority: 'CRITICAL' | 'HIGH' | 'NORMAL';
+  submittedAt: string;
+  slaMinutesRemaining: number;
+  amount?: string;
+  utrNumber?: string;
+  documents: StakeholderRequestDocument[];
+  auditNotes: string;
+  assignedTL?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type VendorOnboardingSource = 'DIRECT' | 'MANAGER' | 'AGENT';
+
+export type VendorCategory =
+  | 'SERVICE'
+  | 'PRODUCTS'
+  | 'DAILY_NEEDS'
+  | 'FOOD'
+  | 'STAY'
+  | 'TRAVEL'
+  | 'JOB';
+
+export type SubAdminLevel = 'STATE' | 'DISTRICT' | 'DIVISION' | 'PINCODE';
+
+export interface VendorTerritory {
+  state: string;
+  district: string;
+  division: string;
+  pincode: string;
+  address?: string;
+}
+
+export interface SubAdminApprovalInfo {
+  isApproved: boolean;
+  subAdminName: string;
+  subAdminMobile: string;
+  subAdminLevel: SubAdminLevel;
+  subAdminTitle: string;
+  approvedAt: string;
+  notes?: string;
+}
+
+export interface VendorRegistrationDoc {
+  name: string;
+  type: string;
+  status: 'VERIFIED' | 'UNDER_REVIEW' | 'REJECTED';
+  fileSize?: string;
+  uploadDate: string;
+}
+
+export interface VendorRecord {
+  id: string;
+  storeName: string;
+  category: VendorCategory;
+  categoryLabel?: string;
+  ownerName: string;
+  phone: string;
+  email: string;
+  onboardingSource: VendorOnboardingSource;
+  officerName?: string;
+  onboardedBy: string;
+  onboardingDate: string;
+  territory: VendorTerritory;
+  subAdminApproval?: SubAdminApprovalInfo;
+  kycStatus: 'VERIFIED' | 'REUPLOAD_NEEDED' | 'UNDER_REVIEW';
+  status: 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED';
+  registrationDetails?: {
+    legalBusinessName: string;
+    tradeName: string;
+    panNumber: string;
+    gstin: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    businessType: string;
+    appliedDate: string;
+  };
+  documents?: VendorRegistrationDoc[];
+}
+
+export interface VendorHistoryRecord {
+  ticketId: string;
+  vendorId: string;
+  vendorName: string;
+  issueTitle: string;
+  assignedTeam: 'KYC Document Verification Desk' | 'Payment & Settlement Team' | 'Query Operations Team' | 'Procurement Team';
+  attendedBy: string;
+  status: 'RESOLVED' | 'PENDING' | 'ESCALATED_TO_SUPPORT_ADMIN';
+  priority: 'CRITICAL' | 'HIGH' | 'NORMAL';
+  createdAt: string;
+  attendedAt: string;
+  resolutionNotes: string;
+  tatMinutes: number;
+}
+
+export interface VendorPayrollRecord {
+  payrollId: string;
+  vendorId: string;
+  vendorName: string;
+  billingPeriod: string;
+  grossSales: string;
+  platformCommission: string;
+  tdsDeduction: string;
+  adjustments: string;
+  netPayout: string;
+  bankName: string;
+  accountNumber: string;
+  ifsc: string;
+  pan: string;
+  gstin: string;
+  payoutStatus: 'PAID' | 'PENDING_PAYOUT' | 'PROCESSING';
+  utrNumber?: string;
+  payoutDate?: string;
+  breakdown: {
+    orderCount: number;
+    averageOrderValue: string;
+    deliveryCommission: string;
+    penaltyAdjustments: string;
+    bonusIncentive: string;
+    tdsRate: string;
+    gstRate: string;
+  };
+}
+
+export type StakeholderLevel = 'STATE' | 'DISTRICT' | 'DIVISION' | 'PINCODE';
+
+export interface StakeholderTerritory {
+  state: string;
+  district: string;
+  division: string;
+  pincode: string;
+  address?: string;
+}
+
+export interface StakeholderApprovalInfo {
+  isApproved: boolean;
+  requiresSubAdminApproval: boolean;
+  subAdminName?: string;
+  subAdminMobile?: string;
+  subAdminLevel?: 'STATE' | 'DISTRICT' | 'DIVISION' | 'PINCODE';
+  approvedAt?: string;
+  notes?: string;
+}
+
+export interface StakeholderDoc {
+  name: string;
+  type: string;
+  status: 'VERIFIED' | 'UNDER_REVIEW' | 'REJECTED';
+  fileSize: string;
+  uploadDate: string;
+}
+
+export interface StakeholderRecord {
+  id: string;
+  type: StakeholderType;
+  name: string;
+  phone: string;
+  email: string;
+  onboardingSource: 'DIRECT' | 'SUB_ADMIN' | 'MAIN_ADMIN' | 'SUPPORT_ADMIN';
+  onboardedBy: string;
+  territory: StakeholderTerritory;
+  approval: StakeholderApprovalInfo;
+  level: StakeholderLevel;
+  roleTitle: string;
+  status: 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED';
+  kycStatus: 'VERIFIED' | 'UNDER_REVIEW' | 'REUPLOAD_NEEDED';
+  joinedDate: string;
+  registrationDetails: {
+    legalName: string;
+    panNumber: string;
+    aadhaarNumber: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    qualification?: string;
+    emergencyContact?: string;
+    appliedDate: string;
+  };
+  documents: StakeholderDoc[];
+}
+
+export interface StakeholderKycRequest {
+  reqId: string;
+  stakeholderId: string;
+  stakeholderType: StakeholderType;
+  name: string;
+  phone: string;
+  roleTitle: string;
+  onboardingSource: 'DIRECT' | 'SUB_ADMIN' | 'MAIN_ADMIN' | 'SUPPORT_ADMIN';
+  onboardedBy: string;
+  approvalInfo: string;
+  submittedAt: string;
+  status: 'UNDER_REVIEW' | 'REUPLOAD_NEEDED' | 'APPROVED';
+  notes: string;
+  documents: { name: string; status: 'VERIFIED' | 'UNDER_REVIEW' | 'REJECTED' }[];
+}
+
+export interface StakeholderQueryIssue {
+  queryId: string;
+  stakeholderId: string;
+  stakeholderType: StakeholderType;
+  name: string;
+  phone: string;
+  roleTitle: string;
+  issueType: string;
+  description: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  assignedDesk: string;
+  sla: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  createdAt: string;
+}
+
+export interface StakeholderPaymentDispute {
+  disputeId: string;
+  stakeholderId: string;
+  stakeholderType: StakeholderType;
+  name: string;
+  roleTitle: string;
+  disputedAmount: number;
+  issueType: string;
+  description: string;
+  status: 'AUDIT_IN_PROGRESS' | 'CREDIT_AUTHORIZED' | 'REJECTED';
+  createdAt: string;
+}
+
+export interface StakeholderHistoryRecord {
+  ticketId: string;
+  stakeholderId: string;
+  stakeholderType: StakeholderType;
+  stakeholderName: string;
+  issueTitle: string;
+  assignedTeam: string;
+  attendedBy: string;
+  status: 'RESOLVED' | 'PENDING' | 'ESCALATED';
+  priority: 'CRITICAL' | 'HIGH' | 'NORMAL';
+  createdAt: string;
+  attendedAt: string;
+  resolvedAt: string;
+  resolutionTimeMinutes: number;
+  resolutionNotes: string;
+  auditBadge: string;
+}
+
+export interface StakeholderPayrollRecord {
+  payrollId: string;
+  stakeholderId: string;
+  stakeholderType: StakeholderType;
+  name: string;
+  roleTitle: string;
+  payPeriod: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  baseCompensation: number;
+  commissionsIncentives: number;
+  tdsDeduction: number;
+  netPayout: number;
+  payoutStatus: 'PAID' | 'PENDING_APPROVAL' | 'PROCESSING';
+  utrNumber?: string;
+  disbursedDate?: string;
+}
+

@@ -52,7 +52,10 @@ import {
   UserCheck,
   Mail,
   PhoneCall,
-  Send
+  Send,
+  Truck,
+  Briefcase,
+  FileCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -106,8 +109,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation Groups Filtered Exclusively by Authenticated Role */}
       <div className="sidebar-nav">
         
-        {/* SUPER ADMIN 20-SECTION COMMAND CENTRE NAVIGATION */}
-        {user.role === UserRole.SUPER_ADMIN && (
+        {/* SUPPORT ADMIN 20-SECTION COMMAND CENTRE NAVIGATION */}
+        {(user.role === UserRole.SUPPORT_ADMIN || user.role === UserRole.SUPER_ADMIN || (user.role as any) === 'SUPER_ADMIN') && (
           <>
             {/* 1. COMMAND CENTRE */}
             <div className="nav-group-title">COMMAND CENTRE</div>
@@ -126,7 +129,160 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span>Live Operations</span>
             </button>
 
-            {/* 2. AI WORKFORCE & COMMAND */}
+            {/* STAKEHOLDER REQUESTS & LIFECYCLE DESK */}
+            <div className="nav-group-title" style={{ marginTop: '0.85rem', color: '#fbbf24' }}>
+              STAKEHOLDER REQUESTS DESK
+            </div>
+            {[
+              {
+                key: 'REQ_VENDOR',
+                label: 'Vendors (Onboarding & Ops)',
+                icon: Building2,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Vendors Directory' },
+                  { id: 'OPERATIONS', label: '2. KYC, Queries & Payment Hub' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Vendor Payroll & Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_AGENT',
+                label: 'Agents (Onboarding & Ops)',
+                icon: Briefcase,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Agents Directory' },
+                  { id: 'OPERATIONS', label: '2. KYC, Queries & Payment Hub' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Agent Payroll & Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_MANAGER',
+                label: 'Managers (Onboarding & Ops)',
+                icon: UsersRound,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Managers Directory' },
+                  { id: 'OPERATIONS', label: '2. KYC, Queries & Payment Hub' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Manager Payroll & Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_SUBADMIN',
+                label: 'Sub Admins (Main Admin Approved)',
+                icon: Shield,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Sub Admins Directory' },
+                  { id: 'OPERATIONS', label: '2. Field Queries & Operations' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Sub Admin Honorarium Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_DELIVERY_PARTNER',
+                label: 'Delivery Partners (Direct Onboard)',
+                icon: Truck,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Delivery Partners Directory' },
+                  { id: 'OPERATIONS', label: '2. Delivery Issues & Queries' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Trip Earnings & Settlement Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_TECHNICIAN',
+                label: 'Technicians (Direct Onboard)',
+                icon: Wrench,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Technicians Directory' },
+                  { id: 'OPERATIONS', label: '2. Job Queries & Spares Hub' },
+                  { id: 'HISTORY', label: '3. Ticket Routing History' },
+                  { id: 'PAYROLL', label: '4. Job Payout & Service Ledger' }
+                ]
+              },
+              {
+                key: 'REQ_SUPPORT_STAFF',
+                label: 'Support Staff (KYC, Payment, Queries)',
+                icon: UserCheck,
+                subItems: [
+                  { id: 'DIRECTORY', label: '1. Support Staff Directory' },
+                  { id: 'OPERATIONS', label: '2. Shift & Queue Allocations' },
+                  { id: 'HISTORY', label: '3. Attendance & Escalation History' },
+                  { id: 'PAYROLL', label: '4. Payroll & Performance Incentive' }
+                ]
+              }
+            ].map(desk => {
+              const isDeskActive = activeSubTab === desk.key ||
+                activeSubTab?.startsWith(`${desk.key}:`) ||
+                (desk.key === 'REQ_VENDOR' && activeSubTab === 'VENDOR_HUB') ||
+                (desk.key === 'REQ_SUPPORT_STAFF' && (activeSubTab === 'REQ_KYC' || activeSubTab === 'REQ_PAYMENT' || activeSubTab === 'REQ_QUERIES'));
+              const DeskIcon = desk.icon;
+
+              return (
+                <div key={desk.key} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <button
+                    className={`sidebar-nav-item ${isDeskActive ? 'active' : ''}`}
+                    onClick={() => onSelectSubTab(desk.key)}
+                  >
+                    <DeskIcon size={16} />
+                    <span>{desk.label}</span>
+                  </button>
+
+                  {/* 4 Pillars Sub-Headings Underneath Each Stakeholder in Sidebar */}
+                  {isDeskActive && (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                      paddingLeft: '0.85rem',
+                      marginTop: '0.2rem',
+                      marginBottom: '0.45rem',
+                      borderLeft: '2px solid rgba(0, 43, 127, 0.25)',
+                      marginLeft: '1.25rem'
+                    }}>
+                      {desk.subItems.map(sub => {
+                        const isSubActive = activeSubTab === `${desk.key}:${sub.id}` ||
+                          (activeSubTab === desk.key && sub.id === 'DIRECTORY') ||
+                          (desk.key === 'REQ_VENDOR' && activeSubTab === 'VENDOR_HUB' && sub.id === 'DIRECTORY');
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => onSelectSubTab(`${desk.key}:${sub.id}`)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.45rem',
+                              padding: '0.35rem 0.55rem',
+                              borderRadius: '6px',
+                              fontSize: '0.72rem',
+                              fontWeight: isSubActive ? 800 : 500,
+                              border: 'none',
+                              background: isSubActive ? 'rgba(0, 43, 127, 0.12)' : 'transparent',
+                              color: isSubActive ? 'var(--text-brand, #002b7f)' : 'var(--text-muted, #64748b)',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span style={{
+                              width: '4px',
+                              height: '4px',
+                              borderRadius: '50%',
+                              background: isSubActive ? 'var(--text-brand, #002b7f)' : '#94a3b8'
+                            }} />
+                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {sub.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* 3. AI WORKFORCE & COMMAND */}
             <div className="nav-group-title" style={{ marginTop: '0.85rem' }}>AI WORKFORCE & COMMAND</div>
             <button
               className={`sidebar-nav-item ${activeSubTab === 'AI_WORKFORCE' ? 'active' : ''}`}
@@ -481,7 +637,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
 
-        {/* QUERY TEAM LEAD NAVIGATION (MIRRORING SUPER ADMIN FLOW) */}
+        {/* QUERY TEAM LEAD NAVIGATION (MIRRORING SUPPORT ADMIN FLOW) */}
         {user.role === UserRole.QUERIES_TL && (
           <>
             <div className="nav-group-title">QUERIES COMMAND CENTRE</div>
@@ -542,7 +698,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
 
-        {/* KYC TEAM LEAD NAVIGATION (MIRRORING SUPER ADMIN FLOW) */}
+        {/* KYC TEAM LEAD NAVIGATION (MIRRORING SUPPORT ADMIN FLOW) */}
         {user.role === UserRole.KYC_TL && (
           <>
             <div className="nav-group-title">KYC COMMAND CENTRE</div>
@@ -619,7 +775,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
 
-        {/* PAYMENT TEAM LEAD NAVIGATION (MIRRORING SUPER ADMIN FLOW) */}
+        {/* PAYMENT TEAM LEAD NAVIGATION (MIRRORING SUPPORT ADMIN FLOW) */}
         {user.role === UserRole.PAYMENT_TL && (
           <>
             <div className="nav-group-title">PAYMENT COMMAND CENTRE</div>

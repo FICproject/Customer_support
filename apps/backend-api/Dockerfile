@@ -1,34 +1,31 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy root monorepo package files
-COPY package.json package-lock.json tsconfig.json ./
-COPY apps/backend-api/package.json ./apps/backend-api/
+# Copy backend package and config files
+COPY apps/backend-api/package*.json ./
+COPY apps/backend-api/tsconfig.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
-# Copy backend source code
-COPY apps/backend-api ./apps/backend-api
+# Copy source code and build TypeScript
+COPY apps/backend-api/src ./src
+RUN npm run build
 
-# Build TypeScript code
-RUN npm --prefix apps/backend-api run build
-
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
-COPY package.json package-lock.json ./
-COPY apps/backend-api/package.json ./apps/backend-api/
+COPY apps/backend-api/package*.json ./
 
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
-COPY --from=builder /app/apps/backend-api/dist ./apps/backend-api/dist
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 4000
 
-CMD ["node", "apps/backend-api/dist/app.js"]
+CMD ["node", "dist/app.js"]

@@ -308,4 +308,146 @@ export class ApiService {
     const res = await fetch(`${API_BASE}/departments/agents/${agentId}/inspect`);
     return res.json();
   }
+
+  public static async getStakeholderRequests(filters: { stakeholderType?: string; category?: string; status?: string; search?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.stakeholderType && filters.stakeholderType !== 'ALL') params.append('stakeholderType', filters.stakeholderType);
+    if (filters.category && filters.category !== 'ALL') params.append('category', filters.category);
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+    if (filters.search) params.append('search', filters.search);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/stakeholder-requests${qs}`);
+    return res.json();
+  }
+
+  public static async getStakeholderRequestsSummary() {
+    const res = await fetch(`${API_BASE}/stakeholder-requests/stats/summary`);
+    return res.json();
+  }
+
+  public static async getStakeholderRequestById(id: string) {
+    const res = await fetch(`${API_BASE}/stakeholder-requests/${id}`);
+    return res.json();
+  }
+
+  public static async createStakeholderRequest(payload: any) {
+    const res = await fetch(`${API_BASE}/stakeholder-requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  public static async takeStakeholderRequestAction(id: string, payload: any) {
+    const res = await fetch(`${API_BASE}/stakeholder-requests/${id}/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  // ==========================================
+  // VENDOR MANAGEMENT & LIFECYCLE OPERATIONS
+  // ==========================================
+  public static async getVendors(filters: { source?: string; status?: string; search?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.source && filters.source !== 'ALL') params.append('source', filters.source);
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+    if (filters.search) params.append('search', filters.search);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/vendors${qs}`);
+    return res.json();
+  }
+
+  public static async getVendorHistory(filters: { vendorId?: string; team?: string; status?: string; search?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.vendorId) params.append('vendorId', filters.vendorId);
+    if (filters.team && filters.team !== 'ALL') params.append('team', filters.team);
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+    if (filters.search) params.append('search', filters.search);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/vendors/history${qs}`);
+    return res.json();
+  }
+
+  public static async getVendorPayroll(filters: { status?: string; vendorId?: string; search?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+    if (filters.vendorId) params.append('vendorId', filters.vendorId);
+    if (filters.search) params.append('search', filters.search);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/vendors/payroll${qs}`);
+    return res.json();
+  }
+
+  public static async releaseVendorPayout(id: string, payload: { utrNumber?: string; approvedBy?: string } = {}) {
+    const res = await fetch(`${API_BASE}/vendors/payroll/${id}/release`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  public static async createVendor(payload: any) {
+    const res = await fetch(`${API_BASE}/vendors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  // --- STAKEHOLDER PLATFORM OPERATIONS ---
+  public static async getStakeholdersDirectory(stakeholderType: string, filters: { search?: string; onboardedBy?: string; level?: string; status?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.search) params.append('search', filters.search);
+    if (filters.onboardedBy && filters.onboardedBy !== 'ALL') params.append('onboardedBy', filters.onboardedBy);
+    if (filters.level && filters.level !== 'ALL') params.append('level', filters.level);
+    if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/directory${qs}`);
+    return res.json();
+  }
+
+  public static async getStakeholdersKycQueries(stakeholderType: string) {
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/kyc-queries`);
+    return res.json();
+  }
+
+  public static async getStakeholdersHistory(stakeholderType: string) {
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/ticket-routing-history`);
+    return res.json();
+  }
+
+  public static async getStakeholdersPayroll(stakeholderType: string) {
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/payroll-ledger`);
+    return res.json();
+  }
+
+  public static async onboardStakeholder(stakeholderType: string, payload: any) {
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/onboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  public static async performStakeholderAction(stakeholderType: string, id: string, payload: { action: string; note?: string; subAdminName?: string; utrNumber?: string }) {
+    const res = await fetch(`${API_BASE}/stakeholders/${stakeholderType}/${id}/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
 }
+

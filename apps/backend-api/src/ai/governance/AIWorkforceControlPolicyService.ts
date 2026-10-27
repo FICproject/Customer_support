@@ -5,18 +5,18 @@ export class AIWorkforceControlPolicyService {
    * Evaluates if a human user role has permission to execute an action on a target department/agent
    */
   static evaluateControlPermission(
-    userRole: 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL',
+    userRole: 'SUPPORT_ADMIN' | 'SUPER_ADMIN' | 'ADMIN' | 'QUERY_TL' | 'KYC_TL' | 'PAYMENT_TL',
     permission: AIWorkforceControlPermission,
     targetDepartment?: Department
   ): { granted: boolean; rationale: string } {
-    // 1. Super Admin has unrestricted full control
-    if (userRole === 'SUPER_ADMIN') {
-      return { granted: true, rationale: 'SUPER_ADMIN granted unrestricted full platform control.' };
+    // 1. Support Admin has unrestricted full control
+    if (userRole === 'SUPPORT_ADMIN' || userRole === 'SUPER_ADMIN') {
+      return { granted: true, rationale: 'SUPPORT_ADMIN granted unrestricted full platform control.' };
     }
 
     // 2. Admin has operational control, but system-level changes (Models, Permissions, Tools, Agent Creation/Deletion) are restricted
     if (userRole === 'ADMIN') {
-      const superAdminOnly: AIWorkforceControlPermission[] = [
+      const supportAdminOnly: AIWorkforceControlPermission[] = [
         AIWorkforceControlPermission.CREATE_DELETE_AGENT,
         AIWorkforceControlPermission.CHANGE_MODEL_CONFIG,
         AIWorkforceControlPermission.CHANGE_PERMISSIONS,
@@ -24,10 +24,10 @@ export class AIWorkforceControlPolicyService {
         AIWorkforceControlPermission.ACTIVATE_DEACTIVATE_AI
       ];
 
-      if (superAdminOnly.includes(permission)) {
+      if (supportAdminOnly.includes(permission)) {
         return { 
           granted: false, 
-          rationale: `Permission '${permission}' requires SUPER_ADMIN role per security policy.` 
+          rationale: `Permission '${permission}' requires SUPPORT_ADMIN role per security policy.` 
         };
       }
 
@@ -78,7 +78,7 @@ export class AIWorkforceControlPolicyService {
   static getRoleControlMatrix(): HumanRoleControlScope[] {
     return [
       {
-        role: 'SUPER_ADMIN',
+        role: 'SUPPORT_ADMIN',
         allowedPermissions: Object.values(AIWorkforceControlPermission)
       },
       {

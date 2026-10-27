@@ -47,7 +47,7 @@ router.post('/create-agent', (req, res) => {
     email,
     phone: phone || '+91-98800-00000',
     role: role as UserRole,
-    userType: store.users.get('usr-superadmin')?.userType || 'INTERNAL' as any,
+    userType: store.users.get('usr-supportadmin') || store.users.get('usr-superadmin')?.userType || 'INTERNAL' as any,
     department: department || (role === UserRole.QUERY_AGENT ? 'QUERY' : role === UserRole.KYC_AGENT ? 'KYC' : 'PAYMENT') as any,
     specializations: specializations || ['Live AI Monitoring', 'Customer Interaction', 'Escalation Resolution'],
     status: 'ACTIVE',

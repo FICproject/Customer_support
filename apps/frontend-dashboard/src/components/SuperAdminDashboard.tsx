@@ -110,9 +110,13 @@ import {
   Mic
 } from 'lucide-react';
 import { TicketVisionFlowModal, TicketVisionFlowData, TicketVisionButton } from './TicketVisionFlowModal';
+import { StakeholderRequestsHub } from './StakeholderRequestsHub';
+import { VendorOperationsHub } from './VendorOperationsHub';
+import { StakeholderOperationsHub } from './StakeholderOperationsHub';
 
 interface SuperAdminProps {
   activeSubTab?: string;
+  onSelectSubTab?: (subTab: string) => void;
 }
 
 interface UserAccount {
@@ -675,7 +679,7 @@ interface RoleDefinition {
 }
 
 const ALL_AVAILABLE_PERMISSIONS = [
-  { code: 'super_admin:all', label: 'Super Admin Full Access', group: 'Platform Governance' },
+  { code: 'support_admin:all', label: 'Support Admin Full Access', group: 'Platform Governance' },
   { code: 'tickets:read', label: 'Read Support Tickets', group: 'Ticket Management' },
   { code: 'tickets:write', label: 'Reply & Reassign Tickets', group: 'Ticket Management' },
   { code: 'tickets:override', label: 'Override AI Ticket Decisions', group: 'Ticket Management' },
@@ -697,7 +701,7 @@ const PERMISSION_GROUPS_MASTER = [
   { id: 'KYC Verification', label: 'KYC Document Verification Desk', icon: FileCheck, count: 3, desc: 'OCR blur verification & document approvals' },
   { id: 'Financial Settlements', label: 'Financial Ledgers & Payouts', icon: DollarSign, count: 3, desc: 'Payment ledgers, referral commissions & bank payouts' },
   { id: 'AI Workforce Engine', label: 'AI Agent & Prompt Control', icon: Cpu, count: 3, desc: 'Prompt sandbox, agent lifecycle & model tuning' },
-  { id: 'Platform Governance', label: 'Platform Governance & Audit', icon: ShieldCheck, count: 3, desc: 'Super admin access, SLA rules & compliance logs' }
+  { id: 'Platform Governance', label: 'Platform Governance & Audit', icon: ShieldCheck, count: 3, desc: 'Support admin access, SLA rules & compliance logs' }
 ];
 
 const ENTERPRISE_FEATURE_FLAGS = [
@@ -717,7 +721,7 @@ const ALL_DEPARTMENTS_MASTER = [
   'Support Gateway Portal'
 ];
 
-const SUPER_ADMIN_RESPONSIBILITIES = [
+const SUPPORT_ADMIN_RESPONSIBILITIES = [
   { title: 'Complete Platform Management', icon: Globe, color: 'text-brand' },
   { title: 'AI Governance', icon: Cpu, color: 'text-cyan' },
   { title: 'User Management', icon: Users, color: 'text-emerald' },
@@ -734,7 +738,7 @@ const SUPER_ADMIN_RESPONSIBILITIES = [
   { title: 'Business Rule Management', icon: Settings, color: 'text-amber' }
 ];
 
-export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 'OVERVIEW' }) => {
+export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 'OVERVIEW', onSelectSubTab }) => {
   const [kpis, setKpis] = useState<KPIState | null>(null);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
@@ -742,7 +746,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   
   // Security Centre interactive states
   const [sessionsList, setSessionsList] = useState([
-    { id: 'sess-1', user: 'Alexander Vance', role: 'SUPER_ADMIN', ip: '192.168.1.15', location: 'New York, US', loginTime: '2026-07-30 08:30:12', device: 'MacBook Pro / Chrome' },
+    { id: 'sess-1', user: 'Alexander Vance', role: 'SUPPORT_ADMIN', ip: '192.168.1.15', location: 'New York, US', loginTime: '2026-07-30 08:30:12', device: 'MacBook Pro / Chrome' },
     { id: 'sess-2', user: 'Sarah Connor', role: 'ADMIN', ip: '10.0.4.88', location: 'London, UK', loginTime: '2026-07-30 09:12:45', device: 'ThinkPad / Firefox' },
     { id: 'sess-3', user: 'Elena Rostova', role: 'SUPPORT_TL', ip: '172.16.8.210', location: 'Berlin, DE', loginTime: '2026-07-30 11:45:00', device: 'iPad / Safari' }
   ]);
@@ -777,7 +781,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   const [pwdLockoutThreshold, setPwdLockoutThreshold] = useState(5);
 
   const [rateLimitPublicApi, setRateLimitPublicApi] = useState(100);
-  const [rateLimitSuperAdmin, setRateLimitSuperAdmin] = useState(60);
+  const [rateLimitSupportAdmin, setRateLimitSuperAdmin] = useState(60);
   const [rateLimitWebhooks, setRateLimitWebhooks] = useState(250);
 
   const [secretsState, setSecretsState] = useState([
@@ -1030,7 +1034,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   const [tlActionNote, setTlActionNote] = useState<{ [key: string]: string }>({});
 
   const handleReviewAction = (tlId: string, ticketId: string, action: 'APPROVED' | 'REJECTED') => {
-    const note = tlActionNote[`${tlId}-${ticketId}`] || 'Reviewed and authorized by Super Admin';
+    const note = tlActionNote[`${tlId}-${ticketId}`] || 'Reviewed and authorized by Support Admin';
     setTeamLeadsList(prev => prev.map(tl => {
       if (tl.id === tlId) {
         const reviewItem = tl.pendingReviews.find((r: any) => r.ticketId === ticketId);
@@ -1718,7 +1722,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   };
 
   // User Management State
-  const [userCategoryFilter, setUserCategoryFilter] = useState<'ALL' | 'SUPER_ADMIN' | 'ADMIN' | 'HUMAN_OFFICER' | 'TEAM_LEAD' | 'VENDOR' | 'TIE_UP_AGENT'>('ALL');
+  const [userCategoryFilter, setUserCategoryFilter] = useState<'ALL' | 'SUPPORT_ADMIN' | 'SUPER_ADMIN' | 'ADMIN' | 'HUMAN_OFFICER' | 'TEAM_LEAD' | 'VENDOR' | 'TIE_UP_AGENT'>('ALL');
   const [userStatusFilter, setUserStatusFilter] = useState<'ALL' | 'ACTIVE' | 'SUSPENDED' | 'LOCKED'>('ALL');
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [openUserMenuId, setOpenUserMenuId] = useState<string | null>(null);
@@ -1735,7 +1739,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   const [whisperMessage, setWhisperMessage] = useState('');
 
   const [usersList, setUsersList] = useState<UserAccount[]>([
-    { id: 'usr-1', name: 'Enterprise Super Admin', email: 'superadmin@enterprise.ai', role: 'SUPER_ADMIN', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:20:15', phone: '+1 (800) 555-0101', assignedCount: 0, csatScore: '5.0/5', department: 'Enterprise Platform Governance', shift: '24x7 Core Shift' },
+    { id: 'usr-1', name: 'Enterprise Support Admin', email: 'supportadmin@enterprise.ai', role: 'SUPPORT_ADMIN', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:20:15', phone: '+1 (800) 555-0101', assignedCount: 0, csatScore: '5.0/5', department: 'Enterprise Platform Governance', shift: '24x7 Core Shift' },
     { id: 'usr-2', name: 'Operational Admin', email: 'admin@enterprise.ai', role: 'ADMIN', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 10:45:02', phone: '+1 (800) 555-0102', assignedCount: 14, csatScore: '4.9/5', department: 'Operations Management', shift: 'Morning Shift' },
     { id: 'usr-3', name: 'Queries Team Lead', email: 'queries.tl@enterprise.ai', role: 'QUERIES_TL', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 11:15:30', phone: '+1 (800) 555-0103', assignedCount: 8, csatScore: '4.85/5', department: 'Customer Support & Queries', shift: 'Morning Shift' },
     { id: 'usr-4', name: 'Marcus Thorne (KYC TL)', email: 'kyc.tl@enterprise.ai', role: 'KYC_TL', status: 'ACTIVE', mfaEnabled: true, lastLogin: '2026-07-29 09:30:12', phone: '+1 (800) 555-0104', assignedCount: 5, csatScore: '4.95/5', department: 'KYC & Document Verification', shift: 'Morning Shift', officerId: 'KYC-TL-01', specialization: 'High-Risk Vendor Clearance' },
@@ -1762,11 +1766,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
   const [rolesList, setRolesList] = useState<RoleDefinition[]>([
     {
       id: 'role-1',
-      roleName: 'SUPER_ADMIN',
+      roleName: 'SUPPORT_ADMIN',
       description: 'Unrestricted enterprise platform control, AI workforce engine governance & security',
       departmentAccess: ['All Departments'],
       permissionGroups: ['Ticket Management', 'KYC Verification', 'Financial Settlements', 'AI Workforce Engine', 'Platform Governance'],
-      permissions: ['super_admin:all', 'tickets:read', 'tickets:write', 'tickets:override', 'kyc:read', 'kyc:approve', 'kyc:reject', 'payments:read', 'commissions:approve', 'payouts:execute', 'ai:view_prompts', 'ai:edit_prompts', 'ai:toggle_agents', 'reports:export', 'system:config'],
+      permissions: ['support_admin:all', 'tickets:read', 'tickets:write', 'tickets:override', 'kyc:read', 'kyc:approve', 'kyc:reject', 'payments:read', 'commissions:approve', 'payouts:execute', 'ai:view_prompts', 'ai:edit_prompts', 'ai:toggle_agents', 'reports:export', 'system:config'],
       menuAccess: 'Full 20-Section Access',
       featureFlags: ['ai_autopilot', 'ocr_fraud_detection', 'bulk_payouts', 'live_sse_stream', 'voice_calling_gateway'],
       approvalRights: 'UNLIMITED',
@@ -2636,7 +2640,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
         activePayloadSnippet: '{"articleId": "KB-304", "words": 1420, "author": "Operations TL", "category": "FIELD_SERVICE"}',
         activeTool: 'pinecone_vector_sync',
         thoughtProcess: [
-          'Received updated policy document from Super Admin Knowledge Management desk',
+          'Received updated policy document from Support Admin Knowledge Management desk',
           'Segmented text into semantic chunks of 512 tokens with 50-token overlapping windows',
           'Generated 1536-dimensional embeddings with cosine similarity optimization',
           'Upserted 8 new vectors into namespace "TN_REGIONAL_SOP_2026"'
@@ -2653,7 +2657,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           avgLatencyMs: 210,
           primaryCapabilities: ['HNSW Vector Upserting', 'Semantic Markdown Chunking', 'Cross-encoder Re-ranking', 'Knowledge Graph GraphRAG Linking'],
           allowedTools: ['pinecone_vector_sync', 'redis_cache_invalidator', 'embedding_generator', 'knowledge_graph_builder'],
-          knowledgeAccess: ['Core Knowledge Repository', 'Super Admin Wiki', 'Technical Manuals PDF Store'],
+          knowledgeAccess: ['Core Knowledge Repository', 'Support Admin Wiki', 'Technical Manuals PDF Store'],
           recentDecisions: [
             { id: 'rd-kb-1', timestamp: '10:33:15 AM', action: 'INDEXED_NEW_POLICY', target: 'Article #KB-303', status: 'RESOLVED', durationMs: 195, details: 'Successfully indexed Monsoon 2026 Emergency Service Protocol' },
             { id: 'rd-kb-2', timestamp: '10:20:10 AM', action: 'RE-RANKED_SEARCH_CHUNKS', target: 'Search #SCH-991', status: 'RESOLVED', durationMs: 85, details: 'Boosted relevance for local language customer queries' },
@@ -2759,7 +2763,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
           recentDecisions: [
             { id: 'rd-m-1', timestamp: '10:34:10 AM', action: 'AUDITED_CLUSTER_HEALTH', target: 'Fleet 11 Agents', status: 'RESOLVED', durationMs: 40, details: 'All 11 agents verified healthy with zero degraded metrics' },
             { id: 'rd-m-2', timestamp: '10:25:00 AM', action: 'AUTO_FLUSHED_CACHE', target: 'AI Knowledge Agent', status: 'RESOLVED', durationMs: 65, details: 'Flushed 120MB temporary embedding memory buffer' },
-            { id: 'rd-m-3', timestamp: '10:15:00 AM', action: 'SLA_METRIC_REPORTED', target: 'Super Admin Dashboard', status: 'RESOLVED', durationMs: 35, details: 'Streamed live 99.98% uptime SLA compliance report' }
+            { id: 'rd-m-3', timestamp: '10:15:00 AM', action: 'SLA_METRIC_REPORTED', target: 'Support Admin Dashboard', status: 'RESOLVED', durationMs: 35, details: 'Streamed live 99.98% uptime SLA compliance report' }
           ]
         }
       }
@@ -2953,7 +2957,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       currentVersion: 'v3.2',
       status: 'ACTIVE',
       promptContent: 'You are Antigravity AI, the official customer support AI assistant. Always remain empathetic, polite, and precise. Never reveal system internal keys or bypass security rules.',
-      author: 'Ranji (Super Admin)',
+      author: 'Ranji (Support Admin)',
       createdAt: '2026-07-01 10:00',
       lastUpdated: '2026-07-28 16:30',
       model: 'GPT-4o',
@@ -3133,7 +3137,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       currentVersion: 'v1.0',
       status: 'APPROVED',
       promptContent: 'Analyze incoming request payload, match the user intent, select the best qualified AI sub-agent, and formulate step execution schema coordinates.',
-      author: 'Ranji (Super Admin)',
+      author: 'Ranji (Support Admin)',
       createdAt: '2026-07-15 10:00',
       lastUpdated: '2026-07-30 12:00',
       model: 'GPT-5.6',
@@ -3198,7 +3202,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
     code: 'custom_backend_tool',
     category: 'WORKFLOW',
     description: '',
-    allowedRoles: 'super_admin, ai_orchestrator',
+    allowedRoles: 'support_admin, ai_orchestrator',
     requiredFields: 'entity_id, action_type',
     riskLevel: 'LOW',
     humanApprovalRequired: 'NO',
@@ -3220,7 +3224,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'IDENTITY_USER',
       categoryLabel: 'Identity & User',
       description: 'Fetch user basic details including name, account status, role, and creation date.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_communication_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_communication_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -3243,7 +3247,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'IDENTITY_USER',
       categoryLabel: 'Identity & User',
       description: 'Identify user role category: Customer, Vendor, Agent, Technician, Hospital, or Hotel.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -3266,7 +3270,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'IDENTITY_USER',
       categoryLabel: 'Identity & User',
       description: 'Fetch verified phone number, email address, WhatsApp consent, and communication preferences.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_communication_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_communication_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -3289,7 +3293,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'IDENTITY_USER',
       categoryLabel: 'Identity & User',
       description: 'Fetch previous support interactions, resolved tickets, escalations, and sentiment history.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "limit": 10\n}',
@@ -3314,7 +3318,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'CUSTOMER',
       categoryLabel: 'Customer',
       description: 'Fetch complete customer details including account status, lifetime value, preferences & metadata.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3337,7 +3341,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'CUSTOMER',
       categoryLabel: 'Customer',
       description: 'Fetch customer order history, item manifests, shipment tracking, and delivery timelines.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "status": "DELIVERED",\n  "limit": 5\n}',
@@ -3360,7 +3364,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'CUSTOMER',
       categoryLabel: 'Customer',
       description: 'Fetch customer booking history across Hotel, Travel, Hospital, and Field Services.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "type": "HOTEL",\n  "limit": 10\n}',
@@ -3383,7 +3387,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'CUSTOMER',
       categoryLabel: 'Customer',
       description: 'Fetch customer membership tier, loyalty reward points, benefits, and expiry date.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3406,7 +3410,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'CUSTOMER',
       categoryLabel: 'Customer',
       description: 'Fetch previous customer complaints, support issues, escalation logs, and resolution details.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "limit": 10\n}',
@@ -3431,7 +3435,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Fetch complete order information including item list, price breakdown, merchant metadata & shipping address.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId'],
         sampleJsonPayload: '{\n  "orderId": "ORD-99182"\n}',
@@ -3454,7 +3458,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Fetch real-time current order lifecycle state (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId'],
         sampleJsonPayload: '{\n  "orderId": "ORD-99182"\n}',
@@ -3477,7 +3481,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Fetch list of all past orders placed by the customer with fulfillment statuses.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "limit": 10\n}',
@@ -3500,7 +3504,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Fetch carrier tracking details, courier checkpoint updates, and estimated delivery ETA.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_communication_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_communication_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId'],
         sampleJsonPayload: '{\n  "orderId": "ORD-99182",\n  "trackingNumber": "TRK-982104"\n}',
@@ -3523,7 +3527,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Evaluate if an order is eligible for cancellation based on fulfillment stage and return policy window.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId'],
         sampleJsonPayload: '{\n  "orderId": "ORD-99182"\n}',
@@ -3546,7 +3550,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ORDERS',
       categoryLabel: 'Orders',
       description: 'Submit an automated cancellation request, halt carrier dispatch, and queue dispute cancellation workflow.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['orderId', 'reason'],
         sampleJsonPayload: '{\n  "orderId": "ORD-99182",\n  "reason": "Customer found alternative",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
@@ -3571,7 +3575,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
       description: 'Fetch complete booking information across flight, hotel stay, doctor appointment, dining, or cab ride.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId'],
         sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821"\n}',
@@ -3594,7 +3598,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
       description: 'Fetch real-time reservation status (CONFIRMED, CHECKED_IN, COMPLETED, RESCHEDULED, CANCELLED).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId'],
         sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821"\n}',
@@ -3617,7 +3621,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
       description: 'Fetch customer booking archive categorized by service type (Hotel, Hospital, Flight, Dining).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "category": "HOTEL",\n  "limit": 10\n}',
@@ -3640,7 +3644,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
       description: 'Check whether cancellation is possible and calculate penalty/settlement window according to provider policies.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId'],
         sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821"\n}',
@@ -3663,7 +3667,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'BOOKINGS',
       categoryLabel: 'Bookings',
       description: 'Submit an automated booking cancellation, release reservation inventory, and trigger dispute cancellation pipeline.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['bookingId', 'reason'],
         sampleJsonPayload: '{\n  "bookingId": "BKG-HTL-8821",\n  "reason": "Travel date changed",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
@@ -3688,7 +3692,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch complete customer membership subscription details, tier ID, join date & status.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3711,7 +3715,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch active membership tier level: Silver, Gold, Platinum, or Diamond with upgrade options.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3734,7 +3738,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch all available privileges: priority support, free lounge access, extra baggage, discount percentages.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "planName": "PLATINUM",\n  "customerId": "CUST-8842"\n}',
@@ -3757,7 +3761,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch real-time membership subscription standing: Active, Expired, Suspended, or Grace Period.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3780,7 +3784,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch membership expiry date, remaining validity days, auto-renewal flag, and payment schedule.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842"\n}',
@@ -3803,7 +3807,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'MEMBERSHIP',
       categoryLabel: 'Membership',
       description: 'Fetch past renewals, invoice receipts, tier upgrades, and reward redemption ledger.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "limit": 10\n}',
@@ -3828,7 +3832,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch vendor details including business trade name, tax registration (GST/EIN), category & store address.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3851,7 +3855,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch vendor registration application metadata, submitted timestamps, referee agent ID & partner type.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3874,7 +3878,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch vendor onboarding lifecycle stage (SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, ACTIVE).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3897,7 +3901,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch vendor business identity verification state, trade license validity, and AML verification scores.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3920,7 +3924,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch secure presigned URLs and OCR extraction records for all submitted vendor compliance documents.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3943,7 +3947,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch registration fee payment status, settlement ledger, commission split, and payout account binding.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -3966,7 +3970,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'VENDOR',
       categoryLabel: 'Vendor',
       description: 'Fetch vendor help desk inquiries, onboarding escalation logs, payout tickets, and resolution history.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['vendorId'],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091",\n  "limit": 10\n}',
@@ -3991,7 +3995,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent details including partner tier, commission plan, territory & registered contact.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4014,7 +4018,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent registration application details, contract agreement, and approval timestamp.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4037,7 +4041,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent onboarding and account standing: SUBMITTED, APPROVED, ACTIVE, SUSPENDED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4060,7 +4064,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent identity verification, national ID/PAN verification state, and banking verification.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4083,7 +4087,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent unique referral code, custom onboarding tracking link, and QR code asset URL.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4106,7 +4110,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch list of all vendors referred by the agent with their onboarding status and revenue impact.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "limit": 10\n}',
@@ -4129,7 +4133,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch agent current wallet balance, accrued commission, pending payouts & lifetime earnings.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4152,7 +4156,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch commission disbursement history, credit transactions, per-vendor referral split breakdown.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "limit": 10\n}',
@@ -4175,7 +4179,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'AGENT',
       categoryLabel: 'Agent',
       description: 'Fetch payout withdrawal status (REQUESTED, PROCESSING, SETTLED, FAILED) and bank UTR reference.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4200,7 +4204,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Fetch complete KYC application metadata, applicant role, document bundle & current evaluation state.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -4223,7 +4227,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Fetch real-time KYC stage: PENDING, DOCUMENT_SUBMITTED, OCR_VERIFIED, FACE_MATCHED, APPROVED, REJECTED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -4246,7 +4250,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Fetch all uploaded documents associated with user profile (Passport, Aadhaar, Trade License, Driving License).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928"\n}',
@@ -4269,7 +4273,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Fetch regulatory compliance criteria and required document matrix based on user role and jurisdiction.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['userRole'],
         sampleJsonPayload: '{\n  "userRole": "VENDOR",\n  "countryCode": "IN"\n}',
@@ -4292,7 +4296,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Retrieve secure presigned file streaming URL and cryptographic checksum for a document.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218"\n}',
@@ -4315,7 +4319,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Perform deep computer vision analysis: verify security holographic overlays, barcode presence & boundaries.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218",\n  "documentType": "PASSPORT"\n}',
@@ -4338,7 +4342,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Detect blurriness, low resolution, glare, cropped edges, and illumination defects.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218"\n}',
@@ -4361,7 +4365,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Run neural OCR parsing to extract name, date of birth, document number, address, and validity date.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218",\n  "ocrEngine": "GOOGLE_DOCUMENT_AI"\n}',
@@ -4384,7 +4388,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Verify extracted document number and authenticity against government API registries (DigiLocker/GovDB).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId', 'documentType'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218",\n  "documentType": "PASSPORT"\n}',
@@ -4407,7 +4411,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Fuzzy-match OCR extracted identity data (Name, DOB, Address) against registered user profile context.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "confidenceThreshold": 85\n}',
@@ -4430,7 +4434,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Check document expiry date to ensure validity is current (> 6 months prior to expiry).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['documentId'],
         sampleJsonPayload: '{\n  "documentId": "DOC-99218"\n}',
@@ -4453,7 +4457,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Dispatch immediate notification to user requesting re-upload of blurry or rejected documents.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent', 'ai_whatsapp_agent', 'ai_email_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'documentType', 'rejectionReason'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "documentType": "AADHAAR",\n  "rejectionReason": "Corner cropped"\n}',
@@ -4476,7 +4480,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Approve verified KYC application, unlock account privileges, and record audit certification.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "decisionNotes": "All OCR and registry checks passed"\n}',
@@ -4499,7 +4503,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Reject KYC application based on rule failures, AML flags, or fraud anomalies.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'reasons'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "reasons": ["Document expired", "Name mismatch"],\n  "allowRetry": true\n}',
@@ -4522,7 +4526,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'KYC',
       categoryLabel: 'KYC',
       description: 'Update KYC state machine progress during multi-agent verification pipeline.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'newStatus'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "newStatus": "OCR_VERIFIED"\n}',
@@ -4547,7 +4551,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Fetch complete payment transaction record, order reference, gateway charge ID, currency & payment method.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218"\n}',
@@ -4570,7 +4574,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Fetch real-time transaction lifecycle status: PAID, PENDING, FAILED, SETTLED, DISPUTED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218"\n}',
@@ -4593,7 +4597,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Fetch historical transaction statement ledger, invoice receipts, credit settlements & billing adjustments for a user.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "limit": 10\n}',
@@ -4616,7 +4620,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Reconcile gateway webhook callback signature against payment provider (Razorpay/Stripe) ledger.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['paymentId'],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218",\n  "gatewayReference": "rzp_pay_99218"\n}',
@@ -4639,7 +4643,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Generate dynamic payment checkout link with UPI QR code, card tokenization and auto-expiry.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'amount', 'purpose'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "amount": 1499,\n  "currency": "INR",\n  "purpose": "Silver Membership Renewal"\n}',
@@ -4662,7 +4666,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Send automated payment reminder notification with direct payment link across WhatsApp, SMS or Email.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "amountDue": 1499,\n  "channel": "WHATSAPP"\n}',
@@ -4685,7 +4689,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Retrieve digital receipt PDF document, GST invoice breakdown & merchant billing address.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218"\n}',
@@ -4708,7 +4712,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Render and cryptographically seal tax compliant GST invoice/receipt document from transaction data.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['paymentId'],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218",\n  "includeTaxBreakdown": true\n}',
@@ -4731,7 +4735,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'PAYMENT',
       categoryLabel: 'Payment',
       description: 'Dispatch generated receipt invoice directly to customer registered email or WhatsApp conversation.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['paymentId'],
         sampleJsonPayload: '{\n  "paymentId": "PAY-99218",\n  "channel": "EMAIL"\n}',
@@ -4756,7 +4760,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Fetch referral binding record, referring agent code, referred vendor entity ID and campaign channel.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "referralCode": "REF-AGT-7721"\n}',
@@ -4779,7 +4783,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Identify primary affiliate agent assigned to a referral code or newly onboarding vendor.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "referralCode": "REF-AGT-7721"\n}',
@@ -4802,7 +4806,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Identify referred vendor business trade name, store location and onboarding completion state.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "vendorId": "VND-4091"\n}',
@@ -4825,7 +4829,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Fetch agent commission tier configuration, fixed bounty payout rules & minimum threshold.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721"\n}',
@@ -4848,7 +4852,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Calculate automated agent commission split according to enterprise rules engine matrix.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId', 'vendorId', 'transactionAmount'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "vendorId": "VND-4091",\n  "transactionAmount": 5000\n}',
@@ -4871,7 +4875,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Fetch itemized historical commission ledger, per-vendor referral rewards & settlement statement.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "limit": 10\n}',
@@ -4894,7 +4898,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Initiate commission balance payout withdrawal to agent verified bank account or UPI VPA.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId', 'amount'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "amount": 2500,\n  "payoutMethod": "UPI"\n}',
@@ -4917,7 +4921,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'REFERRAL_COMMISSION',
       categoryLabel: 'Referral & Commission',
       description: 'Fetch payout processing status: REQUESTED, IN_CLEARING, SETTLED, FAILED with bank UTR reference.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['agentId'],
         sampleJsonPayload: '{\n  "agentId": "AGT-7721",\n  "withdrawalId": "WTH-9921"\n}',
@@ -4942,7 +4946,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'DISPUTE',
       categoryLabel: 'Dispute Settlement',
       description: 'Fetch organization dispute policy guidelines, cooling-off windows & deduction schedules.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "category": "BOOKING"\n}',
@@ -4965,7 +4969,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'DISPUTE',
       categoryLabel: 'Dispute Settlement',
       description: 'Evaluate order/booking timestamp, cancellation state, and merchant policy to compute settlement amount.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId', 'reason'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "bookingId": "BKG-HTL-8821",\n  "reason": "Flight cancelled"\n}',
@@ -4987,8 +4991,8 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'createDisputeClaim',
       category: 'DISPUTE',
       categoryLabel: 'Dispute Settlement',
-      description: 'Draft and queue a formal dispute claim ticket for Team Lead / Super Admin review. (AI cannot disburse directly)',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
+      description: 'Draft and queue a formal dispute claim ticket for Team Lead / Support Admin review. (AI cannot disburse directly)',
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId', 'amount', 'reason'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "bookingId": "BKG-HTL-8821",\n  "amount": 2400,\n  "reason": "Flight cancelled",\n  "settlementMode": "COMMERCIAL_LEDGER"\n}',
@@ -5011,7 +5015,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'DISPUTE',
       categoryLabel: 'Dispute Settlement',
       description: 'Fetch current lifecycle stage of submitted dispute request: QUEUED_FOR_APPROVAL, TL_APPROVED, PROCESSING, CREDITED, REJECTED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: [],
         sampleJsonPayload: '{\n  "disputeClaimId": "DSP-99128"\n}',
@@ -5036,7 +5040,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'SUPPORT',
       categoryLabel: 'Support',
       description: 'Create and dispatch customer support ticket to appropriate departmental queue (QUERY, KYC, PAYMENT, SYSTEM).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['customerId', 'subject', 'description'],
         sampleJsonPayload: '{\n  "customerId": "CUST-8842",\n  "subject": "Payment deducted but order failed",\n  "description": "Amount INR 1499 deducted from UPI",\n  "priority": "HIGH",\n  "department": "PAYMENT"\n}',
@@ -5059,7 +5063,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'SUPPORT',
       categoryLabel: 'Support',
       description: 'Fetch complete support ticket details, conversation log, SLA timer, and assignees.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821"\n}',
@@ -5082,7 +5086,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'SUPPORT',
       categoryLabel: 'Support',
       description: 'Update ticket subject, category, priority or issue description tags.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821",\n  "priority": "CRITICAL"\n}',
@@ -5105,7 +5109,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'SUPPORT',
       categoryLabel: 'Support',
       description: 'Change support ticket lifecycle stage (OPEN, IN_PROGRESS, WAITING_ON_CUSTOMER, RESOLVED, CLOSED, ESCALATED).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId', 'status'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821",\n  "status": "IN_PROGRESS"\n}',
@@ -5128,7 +5132,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'SUPPORT',
       categoryLabel: 'Support',
       description: 'Record internal diagnostic context, AI reasoning, and guidance visible only to AI agents and Team Leads.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId', 'author', 'note'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821",\n  "author": "AI_PAYMENT_AGENT",\n  "note": "Payment gateway reference rzp_pay_9918 confirmed in settling ledger."\n}',
@@ -5153,7 +5157,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ESCALATION',
       categoryLabel: 'Escalation',
       description: 'Trigger formal ticket escalation when SLA breaches, customer sentiment drops, or complex exceptions arise.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId', 'reason', 'department'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821",\n  "reason": "Customer angry about 48h settlement delay",\n  "department": "PAYMENT",\n  "priority": "HIGH"\n}',
@@ -5176,7 +5180,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ESCALATION',
       categoryLabel: 'Escalation',
       description: 'Fetch escalation audit trail, investigation log, assigned Team Lead, and resolution SLA countdown.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['escalationId'],
         sampleJsonPayload: '{\n  "escalationId": "ESC-99128"\n}',
@@ -5198,8 +5202,8 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       code: 'assignToTeamLead',
       category: 'ESCALATION',
       categoryLabel: 'Escalation',
-      description: 'Route escalation directly to domain supervisor (Query TL, KYC TL, Payment TL, or Super Admin).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_escalation_agent'],
+      description: 'Route escalation directly to domain supervisor (Query TL, KYC TL, Payment TL, or Support Admin).',
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['escalationId', 'department'],
         sampleJsonPayload: '{\n  "escalationId": "ESC-99128",\n  "department": "PAYMENT",\n  "routeToAdmin": false\n}',
@@ -5222,7 +5226,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ESCALATION',
       categoryLabel: 'Escalation',
       description: 'Track real-time resolution status of escalated ticket: PENDING, UNDER_INVESTIGATION, RESOLVED, REASSIGNED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['escalationId'],
         sampleJsonPayload: '{\n  "escalationId": "ESC-99128"\n}',
@@ -5245,7 +5249,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'ESCALATION',
       categoryLabel: 'Escalation',
       description: 'Update escalation investigation notes, root-cause tags, and mark resolved once supervisor completes review.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['escalationId', 'status'],
         sampleJsonPayload: '{\n  "escalationId": "ESC-99128",\n  "status": "RESOLVED",\n  "resolutionNotes": "Bank UTR verified and customer credited."\n}',
@@ -5270,7 +5274,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Post AI agent or human reply directly into ticket conversation thread with customer delivery.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['ticketId', 'sender', 'message'],
         sampleJsonPayload: '{\n  "ticketId": "TCK-8821",\n  "sender": "AI_QUERY_AGENT",\n  "message": "Your payment of INR 1499 has been verified and credited."\n}',
@@ -5293,7 +5297,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Fetch active conversation transcript, sentiment analysis scores, intent classifications & session metrics.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['conversationId'],
         sampleJsonPayload: '{\n  "conversationId": "CONV-8821"\n}',
@@ -5316,7 +5320,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Fetch historical chat dialogues across omnichannel touchpoints (Web, Mobile, WhatsApp, Telephony).',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['userId'],
         sampleJsonPayload: '{\n  "userId": "CUST-8842",\n  "limit": 10\n}',
@@ -5339,7 +5343,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Dispatch plain text or HTML formatted custom email directly to customer or vendor.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['to', 'subject', 'body'],
         sampleJsonPayload: '{\n  "to": "customer@example.com",\n  "subject": "Booking Confirmation",\n  "body": "Your hotel reservation is confirmed."\n}',
@@ -5362,7 +5366,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Send pre-approved compliance-verified system transactional email template with dynamic variable injection.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent'],
       inputValidationSchema: {
         requiredFields: ['to', 'templateId', 'variables'],
         sampleJsonPayload: '{\n  "to": "customer@example.com",\n  "templateId": "TMPL-ORDER-CONFIRM",\n  "variables": { "orderId": "ORD-991", "amount": "1499" }\n}',
@@ -5385,7 +5389,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Dispatch real-time interactive WhatsApp conversational session message with optional rich media card.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_whatsapp_agent', 'ai_query_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_whatsapp_agent', 'ai_query_agent'],
       inputValidationSchema: {
         requiredFields: ['to', 'message'],
         sampleJsonPayload: '{\n  "to": "+919876543210",\n  "message": "Hello! How can I assist you today?"\n}',
@@ -5408,7 +5412,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Dispatch Meta-approved official WhatsApp HSM business template for alerts, OTPs, and payment updates.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_whatsapp_agent', 'ai_payment_agent', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_whatsapp_agent', 'ai_payment_agent', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['to', 'templateName'],
         sampleJsonPayload: '{\n  "to": "+919876543210",\n  "templateName": "payment_receipt_alert",\n  "language": "en"\n}',
@@ -5431,7 +5435,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Trigger outbound AI voice call session with real-time neural speech synthesis and intent recognition.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['to', 'scenario'],
         sampleJsonPayload: '{\n  "to": "+919876543210",\n  "scenario": "KYC_VERIFICATION_FOLLOWUP"\n}',
@@ -5454,7 +5458,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Monitor ongoing voice call status: RINGING, IN_PROGRESS, COMPLETED, BUSY, NO_ANSWER, FAILED.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['callId'],
         sampleJsonPayload: '{\n  "callId": "CALL-99128"\n}',
@@ -5477,7 +5481,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Gracefully terminate active voice call session and trigger post-call telemetry pipeline.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_telephony_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_telephony_agent'],
       inputValidationSchema: {
         requiredFields: ['callId'],
         sampleJsonPayload: '{\n  "callId": "CALL-99128",\n  "reason": "USER_COMPLETED_INTENT"\n}',
@@ -5500,7 +5504,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Retrieve real-time speech-to-text transcript turn-by-turn log for voice interaction.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_telephony_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_telephony_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['callId'],
         sampleJsonPayload: '{\n  "callId": "CALL-99128"\n}',
@@ -5523,7 +5527,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'COMMUNICATION',
       categoryLabel: 'Communication',
       description: 'Synthesize LLM post-call summary, customer sentiment arc, resolution tag, and next action items.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_telephony_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_telephony_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['callId'],
         sampleJsonPayload: '{\n  "callId": "CALL-99128"\n}',
@@ -5548,7 +5552,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'NOTIFICATION',
       categoryLabel: 'Notification',
       description: 'Send multi-channel notification across in-app activity bell, push, email, SMS, or WhatsApp.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_kyc_agent', 'ai_payment_agent', 'ai_escalation_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'title', 'message'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "title": "KYC Approved",\n  "message": "Your document verification was successful."\n}',
@@ -5571,7 +5575,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'NOTIFICATION',
       categoryLabel: 'Notification',
       description: 'Send high-priority mobile & web push notification through FCM / APNs gateway.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_whatsapp_agent'],
       inputValidationSchema: {
         requiredFields: ['userId', 'title', 'body'],
         sampleJsonPayload: '{\n  "userId": "USR-10928",\n  "title": "Special Offer",\n  "body": "20% discount on renewal today!"\n}',
@@ -5594,7 +5598,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       category: 'NOTIFICATION',
       categoryLabel: 'Notification',
       description: 'Send DLT registered transactional / promotional SMS gateway message with dynamic variable placeholders.',
-      allowedRoles: ['super_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_kyc_agent'],
+      allowedRoles: ['support_admin', 'ai_orchestrator', 'ai_query_agent', 'ai_payment_agent', 'ai_kyc_agent'],
       inputValidationSchema: {
         requiredFields: ['phoneNumber', 'message'],
         sampleJsonPayload: '{\n  "phoneNumber": "+919876543210",\n  "message": "Your OTP for login is 582910."\n}',
@@ -7620,7 +7624,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       const response = await fetch('/api/v1/telephony/active-calls/CS-MOCK-1234/barge-in', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminId: 'Super Admin (Enterprise)' })
+        body: JSON.stringify({ adminId: 'Support Admin (Enterprise)' })
       });
       setIsStealthMonitorOpen(false);
       if (response.ok) {
@@ -7674,6 +7678,43 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
   return (
     <div className="main-content">
+      {/* VENDOR OPERATIONS & LIFECYCLE HUB (CHANNELS, OPS/KYC/PAYMENTS, TICKET HISTORY, PAYROLL) */}
+      {/* VENDOR OPERATIONS & LIFECYCLE HUB (CHANNELS, OPS/KYC/PAYMENTS, TICKET HISTORY, PAYROLL) */}
+      {(activeSubTab === 'REQ_VENDOR' || activeSubTab?.startsWith('REQ_VENDOR:') || activeSubTab === 'VENDOR_HUB') && (
+        <VendorOperationsHub
+          initialTab={activeSubTab?.includes(':') ? (activeSubTab.split(':')[1] as any) : 'DIRECTORY'}
+          onTabChange={(tab) => onSelectSubTab?.(`REQ_VENDOR:${tab}`)}
+        />
+      )}
+
+      {/* STAKEHOLDER REQUESTS & LIFECYCLE DESK ROUTE */}
+      {(activeSubTab?.startsWith('REQ_AGENT') ||
+        activeSubTab?.startsWith('REQ_MANAGER') ||
+        activeSubTab?.startsWith('REQ_SUBADMIN') ||
+        activeSubTab?.startsWith('REQ_DELIVERY_PARTNER') ||
+        activeSubTab?.startsWith('REQ_TECHNICIAN') ||
+        activeSubTab?.startsWith('REQ_SUPPORT_STAFF') ||
+        activeSubTab?.startsWith('REQ_KYC') ||
+        activeSubTab?.startsWith('REQ_PAYMENT') ||
+        activeSubTab?.startsWith('REQ_QUERIES') ||
+        activeSubTab === 'STAKEHOLDER_DESK') && (
+        <StakeholderOperationsHub
+          initialStakeholder={
+            activeSubTab?.startsWith('REQ_AGENT') ? 'AGENT' :
+            activeSubTab?.startsWith('REQ_MANAGER') ? 'MANAGER' :
+            activeSubTab?.startsWith('REQ_SUBADMIN') ? 'SUBADMIN' :
+            activeSubTab?.startsWith('REQ_DELIVERY_PARTNER') ? 'DELIVERY_PARTNER' :
+            activeSubTab?.startsWith('REQ_TECHNICIAN') ? 'TECHNICIAN' :
+            (activeSubTab?.startsWith('REQ_SUPPORT_STAFF') || activeSubTab?.startsWith('REQ_KYC') || activeSubTab?.startsWith('REQ_PAYMENT') || activeSubTab?.startsWith('REQ_QUERIES')) ? 'SUPPORT_STAFF' : 'AGENT'
+          }
+          initialTab={activeSubTab?.includes(':') ? (activeSubTab.split(':')[1] as any) : 'DIRECTORY'}
+          onTabChange={(tab) => {
+            const base = activeSubTab?.split(':')[0] || 'REQ_AGENT';
+            onSelectSubTab?.(`${base}:${tab}`);
+          }}
+        />
+      )}
+
       {/* Top Command Centre Header - ONLY SHOW ON GLOBAL OVERVIEW TAB */}
       {(!activeSubTab || activeSubTab === 'OVERVIEW') && (
         <div style={{
@@ -7716,7 +7757,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 FORGE INDIA CONNECT PVT. LTD
               </h1>
               <p style={{ color: '#94a3b8', fontSize: '0.92rem', margin: '0.3rem 0 0 0', fontWeight: 500 }}>
-                Super Admin AI Operations Command Centre • <span style={{ color: '#fbbf24', fontWeight: 750, textShadow: '0 0 14px rgba(251, 191, 36, 0.55)' }}>Let's Connect!</span>
+                Support Admin AI Operations Command Centre • <span style={{ color: '#fbbf24', fontWeight: 750, textShadow: '0 0 14px rgba(251, 191, 36, 0.55)' }}>Let's Connect!</span>
               </p>
             </div>
           </div>
@@ -7880,13 +7921,13 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
       {activeSubTab === 'OVERVIEW' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-          {/* SUPER ADMIN AI INFRASTRUCTURE & PERFORMANCE TELEMETRY SUITE (8 METRICS) */}
+          {/* SUPPORT ADMIN AI INFRASTRUCTURE & PERFORMANCE TELEMETRY SUITE (8 METRICS) */}
           <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid var(--accent-cyan)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <BrainCircuit size={22} className="text-cyan" />
                 <div>
-                  <h3 style={{ fontSize: '1.15rem' }}>Super Admin AI Infrastructure & Model Telemetry</h3>
+                  <h3 style={{ fontSize: '1.15rem' }}>Support Admin AI Infrastructure & Model Telemetry</h3>
                   <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
                     Real-time monitoring of AI agent states, compute resource utilization, token throughput, and response latency
                   </p>
@@ -8002,13 +8043,13 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
             </div>
           </div>
 
-          {/* SUPER ADMIN REVENUE & FINANCIAL OPERATIONS LEDGER SUITE (7 METRICS) */}
+          {/* SUPPORT ADMIN REVENUE & FINANCIAL OPERATIONS LEDGER SUITE (7 METRICS) */}
           <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid var(--accent-success)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <DollarSign size={22} className="text-emerald" />
                 <div>
-                  <h3 style={{ fontSize: '1.15rem' }}>Super Admin Revenue & Financial Operations Ledger</h3>
+                  <h3 style={{ fontSize: '1.15rem' }}>Support Admin Revenue & Financial Operations Ledger</h3>
                   <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
                     Comprehensive real-time tracking of platform collections, payouts, vendor fees, and outstanding balances
                   </p>
@@ -8108,13 +8149,13 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
             </div>
           </div>
 
-          {/* SUPER ADMIN OPERATIONS WORKLOAD & EXCEPTIONS MATRIX (10 COUNTERS) */}
+          {/* SUPPORT ADMIN OPERATIONS WORKLOAD & EXCEPTIONS MATRIX (10 COUNTERS) */}
           <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid var(--accent-warning)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <ShieldAlert size={22} className="text-amber" />
                 <div>
-                  <h3 style={{ fontSize: '1.15rem' }}>Super Admin Operations — Pending Workload & Exception Counters</h3>
+                  <h3 style={{ fontSize: '1.15rem' }}>Support Admin Operations — Pending Workload & Exception Counters</h3>
                   <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
                     Real-time monitoring of pending queues, registration workflows, and communication failure exceptions
                   </p>
@@ -8224,7 +8265,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <Zap size={22} className="text-emerald" />
                 <div>
-                  <h3 style={{ fontSize: '1.15rem' }}>Super Admin Real-Time Operations Health Status</h3>
+                  <h3 style={{ fontSize: '1.15rem' }}>Support Admin Real-Time Operations Health Status</h3>
                   <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
                     Instant live status answers for all 10 critical operational health check indicators
                   </p>
@@ -11791,7 +11832,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 currentVersion: 'v1.0',
                 status: 'DRAFT',
                 promptContent: newPromptForm.promptContent,
-                author: 'Ranji (Super Admin)',
+                author: 'Ranji (Support Admin)',
                 createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
                 lastUpdated: new Date().toISOString().replace('T', ' ').slice(0, 16),
                 model: 'GPT-4o',
@@ -11802,7 +11843,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   {
                     id: `vh-${Date.now()}`,
                     version: 'v1.0',
-                    author: 'Ranji (Super Admin)',
+                    author: 'Ranji (Support Admin)',
                     commitMessage: 'Initial prompt template creation.',
                     timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
                     content: newPromptForm.promptContent,
@@ -12099,7 +12140,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
               const newHistoryItem: PromptVersionHistoryItem = {
                 id: `vh-${Date.now()}`,
                 version: updatedVersion,
-                author: 'Ranji (Super Admin)',
+                author: 'Ranji (Support Admin)',
                 commitMessage: `Updated prompt template text for ${editingPromptItem.code}.`,
                 timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
                 content: editingPromptItem.promptContent,
@@ -12685,7 +12726,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 category: newToolForm.category,
                 categoryLabel: categoryLabels[newToolForm.category] || 'Custom Tools',
                 description: newToolForm.description,
-                allowedRoles: rolesArr.length ? rolesArr : ['super_admin', 'ai_orchestrator'],
+                allowedRoles: rolesArr.length ? rolesArr : ['support_admin', 'ai_orchestrator'],
                 riskLevel: newToolForm.riskLevel,
                 humanApprovalRequired: newToolForm.humanApprovalRequired,
                 approvalAuthority: newToolForm.approvalAuthority,
@@ -12749,17 +12790,17 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                             inferredCategory = 'CUSTOMER';
                           }
 
-                          let autoRoles = 'super_admin, ai_orchestrator';
+                          let autoRoles = 'support_admin, ai_orchestrator';
                           if (inferredCategory === 'SECURITY' || valLow.includes('kyc')) {
-                            autoRoles = 'super_admin, ai_orchestrator, ai_kyc_agent';
+                            autoRoles = 'support_admin, ai_orchestrator, ai_kyc_agent';
                           } else if (inferredCategory === 'PAYMENT' || valLow.includes('pay')) {
-                            autoRoles = 'super_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
+                            autoRoles = 'support_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
                           } else if (inferredCategory === 'COMMUNICATION' || valLow.includes('email')) {
-                            autoRoles = 'super_admin, ai_orchestrator, ai_communication_agent, ai_query_agent';
+                            autoRoles = 'support_admin, ai_orchestrator, ai_communication_agent, ai_query_agent';
                           } else if (inferredCategory === 'TICKET') {
-                            autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_escalation_agent';
+                            autoRoles = 'support_admin, ai_orchestrator, ai_query_agent, ai_escalation_agent';
                           } else if (inferredCategory === 'CUSTOMER') {
-                            autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_whatsapp_agent';
+                            autoRoles = 'support_admin, ai_orchestrator, ai_query_agent, ai_whatsapp_agent';
                           }
 
                           setNewToolForm({
@@ -12794,13 +12835,13 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                         value={newToolForm.category} 
                         onChange={e => {
                           const newCat = e.target.value as any;
-                          let autoRoles = 'super_admin, ai_orchestrator';
-                          if (newCat === 'KYC') autoRoles = 'super_admin, ai_orchestrator, ai_kyc_agent';
-                          else if (newCat === 'PAYMENT' || newCat === 'REFERRAL_COMMISSION' || newCat === 'DISPUTE') autoRoles = 'super_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
-                          else if (newCat === 'COMMUNICATION' || newCat === 'NOTIFICATION') autoRoles = 'super_admin, ai_orchestrator, ai_communication_agent, ai_query_agent';
-                          else if (newCat === 'SUPPORT' || newCat === 'ESCALATION') autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_escalation_agent';
-                          else if (newCat === 'CUSTOMER' || newCat === 'ORDERS' || newCat === 'BOOKINGS' || newCat === 'MEMBERSHIP') autoRoles = 'super_admin, ai_orchestrator, ai_query_agent, ai_whatsapp_agent';
-                          else autoRoles = 'super_admin, ai_orchestrator, ai_query_agent';
+                          let autoRoles = 'support_admin, ai_orchestrator';
+                          if (newCat === 'KYC') autoRoles = 'support_admin, ai_orchestrator, ai_kyc_agent';
+                          else if (newCat === 'PAYMENT' || newCat === 'REFERRAL_COMMISSION' || newCat === 'DISPUTE') autoRoles = 'support_admin, ai_orchestrator, ai_payment_agent, ai_query_agent';
+                          else if (newCat === 'COMMUNICATION' || newCat === 'NOTIFICATION') autoRoles = 'support_admin, ai_orchestrator, ai_communication_agent, ai_query_agent';
+                          else if (newCat === 'SUPPORT' || newCat === 'ESCALATION') autoRoles = 'support_admin, ai_orchestrator, ai_query_agent, ai_escalation_agent';
+                          else if (newCat === 'CUSTOMER' || newCat === 'ORDERS' || newCat === 'BOOKINGS' || newCat === 'MEMBERSHIP') autoRoles = 'support_admin, ai_orchestrator, ai_query_agent, ai_whatsapp_agent';
+                          else autoRoles = 'support_admin, ai_orchestrator, ai_query_agent';
 
                           setNewToolForm({
                             ...newToolForm,
@@ -12831,7 +12872,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                       <label className="form-label">Allowed Agent Roles</label>
                       <input 
                         className="form-input" 
-                        placeholder="super_admin, ai_orchestrator..." 
+                        placeholder="support_admin, ai_orchestrator..." 
                         value={newToolForm.allowedRoles} 
                         onChange={e => setNewToolForm({ ...newToolForm, allowedRoles: e.target.value })} 
                       />
@@ -12882,11 +12923,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
                             let autoAuthorities = 'NONE';
                             if (val === 'HIGH') {
-                              // HIGH: Auto-tick specific Domain TL, Admin, and Super Admin
-                              autoAuthorities = `${domainTL}, ADMIN, SUPER_ADMIN`;
+                              // HIGH: Auto-tick specific Domain TL, Admin, and Support Admin
+                              autoAuthorities = `${domainTL}, ADMIN, SUPPORT_ADMIN`;
                             } else if (val === 'CRITICAL') {
-                              // CRITICAL: Auto-tick specific Domain TL, Admin, Super Admin
-                              autoAuthorities = `${domainTL}, ADMIN, SUPER_ADMIN`;
+                              // CRITICAL: Auto-tick specific Domain TL, Admin, Support Admin
+                              autoAuthorities = `${domainTL}, ADMIN, SUPPORT_ADMIN`;
                             } else {
                               autoAuthorities = 'NONE';
                             }
@@ -12925,7 +12966,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                               humanApprovalRequired: val,
                               approvalMode: val === 'YES' ? 'BEFORE_EXECUTION' : 'NONE',
                               approvalAuthority: val === 'YES' && (newToolForm.approvalAuthority === 'NONE' || !newToolForm.approvalAuthority)
-                                ? `${domainTL}, ADMIN, SUPER_ADMIN`
+                                ? `${domainTL}, ADMIN, SUPPORT_ADMIN`
                                 : val === 'NO' ? 'NONE' : newToolForm.approvalAuthority
                             });
                           }}
@@ -13029,7 +13070,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                               { id: 'KYC_TL', label: 'KYC TL' },
                               { id: 'PAYMENT_TL', label: 'Payment TL' },
                               { id: 'ADMIN', label: 'Admin' },
-                              { id: 'SUPER_ADMIN', label: 'Super Admin' },
+                              { id: 'SUPPORT_ADMIN', label: 'Support Admin' },
                               { id: 'TL_OR_ADMIN', label: 'TL or Admin' }
                             ].map(item => {
                               const currentSelected = newToolForm.approvalAuthority.split(',').map(s => s.trim()).filter(Boolean);
@@ -13400,7 +13441,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
                             let autoAuthorities = 'NONE';
                             if (val === 'HIGH' || val === 'CRITICAL') {
-                              autoAuthorities = `${domainTL}, ADMIN, SUPER_ADMIN`;
+                              autoAuthorities = `${domainTL}, ADMIN, SUPPORT_ADMIN`;
                             } else {
                               autoAuthorities = 'NONE';
                             }
@@ -13439,7 +13480,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                               humanApprovalRequired: val,
                               approvalMode: val === 'YES' ? 'BEFORE_EXECUTION' : 'NONE',
                               approvalAuthority: val === 'YES' && (!editingToolItem.approvalAuthority || editingToolItem.approvalAuthority === 'NONE')
-                                ? `${domainTL}, ADMIN, SUPER_ADMIN`
+                                ? `${domainTL}, ADMIN, SUPPORT_ADMIN`
                                 : val === 'NO' ? 'NONE' : editingToolItem.approvalAuthority
                             });
                           }}
@@ -13539,7 +13580,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                               { id: 'KYC_TL', label: 'KYC TL' },
                               { id: 'PAYMENT_TL', label: 'Payment TL' },
                               { id: 'ADMIN', label: 'Admin' },
-                              { id: 'SUPER_ADMIN', label: 'Super Admin' },
+                              { id: 'SUPPORT_ADMIN', label: 'Support Admin' },
                               { id: 'TL_OR_ADMIN', label: 'TL or Admin' }
                             ].map(item => {
                               const currentSelected = (editingToolItem.approvalAuthority || 'NONE').split(',').map(s => s.trim()).filter(Boolean);
@@ -13912,7 +13953,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
               <Users size={22} className="text-brand" /> Comprehensive User Governance & Account Control
             </h3>
             <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
-              Manage Super Admins, Team Leads, Human Agents, and partner accounts with role-based access control
+              Manage Support Admins, Team Leads, Human Agents, and partner accounts with role-based access control
             </p>
           </div>
 
@@ -13927,7 +13968,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <span>{usersList.length}</span>
                 <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>6 CATEGORIES</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Super Admins, Admins, TLs & Partners</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Support Admins, Admins, TLs & Partners</div>
             </div>
 
             <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #10b981 0%, #34d399 100%)', '--kpi-hover-border': '#34d399' } as React.CSSProperties}>
@@ -13998,7 +14039,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 }}
               >
                 <option value="ALL">All Users ({usersList.length})</option>
-                <option value="SUPER_ADMIN">Super Admin ({usersList.filter(u => u.role === 'SUPER_ADMIN').length})</option>
+                <option value="SUPPORT_ADMIN">Support Admin ({usersList.filter(u => (u.role === 'SUPPORT_ADMIN' || u.role === 'SUPER_ADMIN')).length})</option>
                 <option value="QUERIES_TL">Query Team Lead ({usersList.filter(u => u.role === 'QUERIES_TL').length})</option>
                 <option value="KYC_TL">KYC Team Lead ({usersList.filter(u => u.role === 'KYC_TL').length})</option>
                 <option value="PAYMENT_TL">Payment Team Lead ({usersList.filter(u => u.role === 'PAYMENT_TL').length})</option>
@@ -14079,7 +14120,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                                   width: '38px', 
                                   height: '38px', 
                                   borderRadius: '50%', 
-                                  background: u.role === 'SUPER_ADMIN' ? 'linear-gradient(135deg, #a855f7, #6366f1)' : isOfficer ? 'linear-gradient(135deg, #0284c7, #10b981)' : u.role.endsWith('_TL') ? 'linear-gradient(135deg, #f59e0b, #d97706)' : u.role === 'CUSTOMER' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #06b6d4, #2563eb)', 
+                                  background: (u.role === 'SUPPORT_ADMIN' || u.role === 'SUPER_ADMIN') ? 'linear-gradient(135deg, #a855f7, #6366f1)' : isOfficer ? 'linear-gradient(135deg, #0284c7, #10b981)' : u.role.endsWith('_TL') ? 'linear-gradient(135deg, #f59e0b, #d97706)' : u.role === 'CUSTOMER' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #06b6d4, #2563eb)', 
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
@@ -14109,10 +14150,10 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                                 display: 'inline-flex', 
                                 alignItems: 'center', 
                                 gap: '0.35rem',
-                                color: u.role === 'SUPER_ADMIN' ? '#c084fc' : u.role === 'PAYMENT_HUMAN_OFFICER' ? '#38bdf8' : u.role === 'KYC_HUMAN_OFFICER' ? '#34d399' : u.role === 'HUMAN_AGENT' ? '#22d3ee' : u.role.endsWith('_TL') ? '#fbbf24' : u.role === 'CUSTOMER' ? '#34d399' : u.role === 'VENDOR' ? '#818cf8' : u.role === 'TIE_UP_AGENT' ? '#2dd4bf' : '#38bdf8'
+                                color: (u.role === 'SUPPORT_ADMIN' || u.role === 'SUPER_ADMIN') ? '#c084fc' : u.role === 'PAYMENT_HUMAN_OFFICER' ? '#38bdf8' : u.role === 'KYC_HUMAN_OFFICER' ? '#34d399' : u.role === 'HUMAN_AGENT' ? '#22d3ee' : u.role.endsWith('_TL') ? '#fbbf24' : u.role === 'CUSTOMER' ? '#34d399' : u.role === 'VENDOR' ? '#818cf8' : u.role === 'TIE_UP_AGENT' ? '#2dd4bf' : '#38bdf8'
                               }}
                             >
-                              {u.role === 'SUPER_ADMIN' && <Crown size={12} />}
+                              {(u.role === 'SUPPORT_ADMIN' || u.role === 'SUPER_ADMIN') && <Crown size={12} />}
                               {u.role === 'PAYMENT_HUMAN_OFFICER' && <CreditCard size={12} />}
                               {u.role === 'KYC_HUMAN_OFFICER' && <FileCheck size={12} />}
                               {u.role === 'HUMAN_AGENT' && <Headset size={12} />}
@@ -14319,7 +14360,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                     width: '46px', 
                     height: '46px', 
                     borderRadius: '50%', 
-                    background: activeUserActionModal.user.role === 'SUPER_ADMIN' ? 'linear-gradient(135deg, #a855f7, #6366f1)' : activeUserActionModal.user.role.endsWith('_TL') ? 'linear-gradient(135deg, #f59e0b, #d97706)' : activeUserActionModal.user.role === 'CUSTOMER' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #06b6d4, #2563eb)', 
+                    background: (activeUserActionModal.user.role === 'SUPPORT_ADMIN' || activeUserActionModal.user.role === 'SUPER_ADMIN') ? 'linear-gradient(135deg, #a855f7, #6366f1)' : activeUserActionModal.user.role.endsWith('_TL') ? 'linear-gradient(135deg, #f59e0b, #d97706)' : activeUserActionModal.user.role === 'CUSTOMER' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #06b6d4, #2563eb)', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center', 
@@ -14504,7 +14545,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <div>
                   <h4 style={{ marginBottom: '0.75rem', fontSize: '0.95rem' }}>User Activity Timeline</h4>
                   <div className="log-box" style={{ maxHeight: '300px' }}>
-                    <div>[2026-07-29 11:20:15] Action: Logged into Enterprise Super Admin Command Centre (IP 192.168.1.10)</div>
+                    <div>[2026-07-29 11:20:15] Action: Logged into Enterprise Support Admin Command Centre (IP 192.168.1.10)</div>
                     <div>[2026-07-29 10:45:00] Action: Approved Document Verification #KYC-8849</div>
                     <div>[2026-07-29 09:12:30] Action: Configured SLA Routing Rules for Queries Desk</div>
                     <div>[2026-07-28 16:30:10] Action: Dispatched Customer Payment Link #PAY-9920</div>
@@ -14664,7 +14705,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   value={editingUser.role}
                   onChange={e => setEditingUser({ ...editingUser, role: e.target.value })}
                 >
-                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="SUPPORT_ADMIN">Support Admin</option>
                   <option value="QUERIES_TL">Query Team Lead</option>
                   <option value="KYC_TL">KYC Team Lead</option>
                   <option value="PAYMENT_TL">Payment Team Lead</option>
@@ -14775,7 +14816,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   value={newUserForm.role}
                   onChange={e => setNewUserForm({ ...newUserForm, role: e.target.value })}
                 >
-                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="SUPPORT_ADMIN">Support Admin</option>
                   <option value="QUERIES_TL">Query Team Lead</option>
                   <option value="KYC_TL">KYC Team Lead</option>
                   <option value="PAYMENT_TL">Payment Team Lead</option>
@@ -14837,7 +14878,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 <span>{rolesList.length}</span>
                 <span className="badge badge-info" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>7 SYSTEM ROLES</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Super Admin, Admins, TLs & App Portal</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Support Admin, Admins, TLs & App Portal</div>
             </div>
 
             <div className="kpi-card-modern" style={{ '--kpi-accent-gradient': 'linear-gradient(90deg, #10b981 0%, #34d399 100%)', '--kpi-hover-border': '#34d399' } as React.CSSProperties}>
@@ -15036,7 +15077,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 {PERMISSION_GROUPS_MASTER.map(group => {
                   const GroupIcon = group.icon;
                   const groupScopes = ALL_AVAILABLE_PERMISSIONS.filter(p => p.group === group.id);
-                  const assignedRoles = rolesList.filter(r => r.permissionGroups?.includes(group.id) || r.permissions.includes('super_admin:all'));
+                  const assignedRoles = rolesList.filter(r => r.permissionGroups?.includes(group.id) || r.permissions.includes('support_admin:all'));
 
                   return (
                     <div key={group.id} style={{ background: 'var(--bg-dark)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
@@ -15165,7 +15206,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   </thead>
                   <tbody>
                     {ALL_AVAILABLE_PERMISSIONS.map(perm => {
-                      const rolesWithPerm = rolesList.filter(r => r.permissions.includes('super_admin:all') || r.permissions.includes(perm.code));
+                      const rolesWithPerm = rolesList.filter(r => r.permissions.includes('support_admin:all') || r.permissions.includes(perm.code));
                       return (
                         <tr key={perm.code}>
                           <td><code style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)' }}>{perm.code}</code></td>
@@ -15401,7 +15442,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                     <div className="form-group">
                       <label className="form-label">Menu Access Drawer Level</label>
                       <select className="form-select" value={editingRole.menuAccess} onChange={e => setEditingRole({ ...editingRole, menuAccess: e.target.value })}>
-                        <option value="Full 20-Section Access">Full 20-Section Access (Super Admin)</option>
+                        <option value="Full 20-Section Access">Full 20-Section Access (Support Admin)</option>
                         <option value="Operational Admin Desk">Operational Admin Desk</option>
                         <option value="Queries TL Desk">Queries TL Desk</option>
                         <option value="KYC TL Desk">KYC TL Desk</option>
@@ -16051,7 +16092,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                 content: newDocForm.content,
                 version: 'v1.0',
                 status: 'PUBLISHED',
-                author: 'Ranji (Super Admin)',
+                author: 'Ranji (Support Admin)',
                 lastUpdated: new Date().toISOString().replace('T', ' ').slice(0, 16),
                 embeddingChunks: generatedChunks,
                 vectorDbStatus: 'INDEXED',
@@ -16062,7 +16103,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   {
                     id: `dvh-${Date.now()}`,
                     version: 'v1.0',
-                    author: 'Ranji (Super Admin)',
+                    author: 'Ranji (Support Admin)',
                     timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
                     changeSummary: 'Initial document import and vector embedding chunking.',
                     contentSnippet: newDocForm.content.slice(0, 100) + '...'
@@ -16177,7 +16218,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   {
                     id: `dvh-${Date.now()}`,
                     version: nextVer,
-                    author: 'Ranji (Super Admin)',
+                    author: 'Ranji (Support Admin)',
                     timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
                     changeSummary: 'Updated document content and re-indexed vector embeddings.',
                     contentSnippet: editingDocItem.content.slice(0, 100) + '...'
@@ -20308,9 +20349,9 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
                   <div style={{ background: 'var(--bg-dark)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Super Admin Accounts</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Support Admin Accounts</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--text-brand)' }}>
-                      {usersList.filter(u => u.role === 'SUPER_ADMIN').length || 1}
+                      {usersList.filter(u => (u.role === 'SUPPORT_ADMIN' || u.role === 'SUPER_ADMIN')).length || 1}
                     </div>
                   </div>
                   <div style={{ background: 'var(--bg-dark)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
@@ -21239,18 +21280,18 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   </div>
 
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <label className="form-label">Super Admin panel requests threshold (req/min)</label>
+                    <label className="form-label">Support Admin panel requests threshold (req/min)</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <input
                         type="range"
                         min="20"
                         max="200"
                         step="5"
-                        value={rateLimitSuperAdmin}
+                        value={rateLimitSupportAdmin}
                         onChange={(e) => setRateLimitSuperAdmin(Number(e.target.value))}
                         style={{ flex: 1 }}
                       />
-                      <strong style={{ fontSize: '1rem', width: '90px' }}>{rateLimitSuperAdmin} req/min</strong>
+                      <strong style={{ fontSize: '1rem', width: '90px' }}>{rateLimitSupportAdmin} req/min</strong>
                     </div>
                   </div>
 
@@ -22344,7 +22385,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                               <strong>Ticket: <code>{rev.ticketId}</code></strong>
-                              <TicketVisionButton ticket={{ id: rev.ticketId, ticketNumber: rev.ticketId, customerName: rev.customer, departmentLabel: activeTl.department, status: 'PENDING_SUPER_ADMIN_OVERRIDE', isEscalated: true }} compact size="sm" />
+                              <TicketVisionButton ticket={{ id: rev.ticketId, ticketNumber: rev.ticketId, customerName: rev.customer, departmentLabel: activeTl.department, status: 'PENDING_SUPPORT_ADMIN_OVERRIDE', isEscalated: true }} compact size="sm" />
                             </div>
                             <span style={{ color: 'var(--text-muted)' }}>{rev.date}</span>
                           </div>
@@ -23352,7 +23393,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
                   { key: 'ENABLE_WHATSAPP_BOT', name: 'Meta WhatsApp Business Bot Integration', desc: 'Allows automated responses via official WhatsApp Cloud API' },
                   { key: 'ENABLE_AUTO_SETTLEMENTS', name: 'Automated Stripe Payment Dispute Settlement Execution', desc: 'Allows AI agents to execute direct Stripe dispute settlements' },
                   { key: 'ENABLE_ADVANCED_KYC', name: 'Azure Cognitive Vision OCR Document Checks', desc: 'Runs document forgery blur detection on uploads' },
-                  { key: 'ENABLE_REALTIME_METRICS', name: 'Live WebSockets Performance Stream', desc: 'Streams live metric telemetry to Super Admin panel' }
+                  { key: 'ENABLE_REALTIME_METRICS', name: 'Live WebSockets Performance Stream', desc: 'Streams live metric telemetry to Support Admin panel' }
                 ].map(flag => (
                   <div
                     key={flag.key}
@@ -23567,7 +23608,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminProps> = ({ activeSubTab = 
         <div className="action-popup-overlay" style={{ zIndex: 99999 }} onClick={() => setUserFormNotification(null)}>
           <div className="action-popup-content" style={{ maxWidth: '380px', width: '90%', padding: '1.25rem 1.35rem 1.15rem 1.35rem', gap: '0.75rem' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-brand)', background: 'var(--bg-surface-hover)', padding: '0.2rem 0.65rem', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
-              FORGE INDIA CONNECT • SUPER ADMIN DISPATCH
+              FORGE INDIA CONNECT • SUPPORT ADMIN DISPATCH
             </div>
 
             <div style={{

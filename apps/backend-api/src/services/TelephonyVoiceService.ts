@@ -243,24 +243,24 @@ export class TelephonyVoiceService {
     session.status = 'COMPLETED';
     session.transcript.push({
       speaker: 'AI',
-      text: '[SYSTEM INTERVENTION] Call forcefully ended by Super Admin.',
+      text: '[SYSTEM INTERVENTION] Call forcefully ended by Support Admin.',
       timestamp: new Date().toISOString()
     });
 
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       agentType: AIAgentType.CALLING,
       action: 'CALL_FORCE_ENDED',
       inputPayload: { callSid },
       outputResult: { status: 'COMPLETED' },
-      decisionReasoning: 'Super Admin forcefully ended the call via Stealth Monitor.',
+      decisionReasoning: 'Support Admin forcefully ended the call via Stealth Monitor.',
       validationPassed: true
     });
 
     return true;
   }
 
-  public static bargeInCall(callSid: string, adminId: string = 'Super Admin'): boolean {
+  public static bargeInCall(callSid: string, adminId: string = 'Support Admin'): boolean {
     const session = this.activeCalls.get(callSid);
     if (!session || session.status === 'COMPLETED') {
       return false;
@@ -274,12 +274,12 @@ export class TelephonyVoiceService {
     });
 
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       agentType: AIAgentType.CALLING,
       action: 'CALL_BARGE_IN',
       inputPayload: { callSid, adminId },
       outputResult: { status: 'TRANSFERRED_TO_HUMAN' },
-      decisionReasoning: 'Super Admin barged into the call via Stealth Monitor.',
+      decisionReasoning: 'Support Admin barged into the call via Stealth Monitor.',
       validationPassed: true
     });
 

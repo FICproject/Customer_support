@@ -1,4 +1,5 @@
 export enum UserRole {
+  SUPPORT_ADMIN = 'SUPPORT_ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   QUERIES_TL = 'QUERIES_TL',

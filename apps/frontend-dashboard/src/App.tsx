@@ -48,12 +48,47 @@ export function App() {
   }, []);
   const [user, setUser] = useState<{ name: string; email: string; role: UserRole | 'CONNECT_APP' } | null>(() => {
     const saved = localStorage.getItem('auth_user_session');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.name && parsed.name.includes('Super Admin')) {
+        parsed.name = parsed.name.replace(/Super Admin/g, 'Support Admin');
+        if (parsed.email === 'superadmin@enterprise.ai') {
+          parsed.email = 'supportadmin@enterprise.ai';
+        }
+        localStorage.setItem('auth_user_session', JSON.stringify(parsed));
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
   });
 
   const [activeSubTab, setActiveSubTab] = useState<string>(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlSubTab = searchParams.get('subTab');
+      if (urlSubTab) return urlSubTab;
+
+      const stakeholder = searchParams.get('stakeholder');
+      const tab = searchParams.get('tab') || 'DIRECTORY';
+      if (stakeholder) {
+        const sKey = stakeholder.toUpperCase().startsWith('REQ_')
+          ? stakeholder.toUpperCase()
+          : `REQ_${stakeholder.toUpperCase()}`;
+        return `${sKey}:${tab.toUpperCase()}`;
+      }
+
+      if (window.location.hash) {
+        const hashVal = window.location.hash.replace('#', '');
+        if (hashVal) return hashVal;
+      }
+    } catch {
+      // Fallback to default role tab
+    }
+
     if (!user) return 'OVERVIEW';
-    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) return 'OVERVIEW';
+    if (user.role === UserRole.SUPPORT_ADMIN || user.role === UserRole.SUPER_ADMIN || (user.role as any) === 'SUPER_ADMIN' || user.role === UserRole.ADMIN) return 'OVERVIEW';
     if (user.role === 'CONNECT_APP') return 'CHAT';
     if (user.role === UserRole.QUERIES_TL) return 'OVERVIEW';
     if (user.role === UserRole.KYC_TL) return 'OVERVIEW';
@@ -61,6 +96,61 @@ export function App() {
     if (user.role === UserRole.QUERY_AGENT || user.role === UserRole.KYC_AGENT || user.role === UserRole.PAYMENT_AGENT) return 'AGENT_DESK';
     return 'OVERVIEW';
   });
+
+  // Keep browser URL query params synchronized with activeSubTab without full page refresh
+  useEffect(() => {
+    if (!activeSubTab) return;
+
+    try {
+      const url = new URL(window.location.href);
+      if (activeSubTab === 'OVERVIEW') {
+        url.searchParams.delete('subTab');
+        url.searchParams.delete('stakeholder');
+        url.searchParams.delete('tab');
+      } else if (activeSubTab.includes(':')) {
+        const [desk, sub] = activeSubTab.split(':');
+        const cleanDesk = desk.replace('REQ_', '');
+        url.searchParams.set('stakeholder', cleanDesk);
+        url.searchParams.set('tab', sub);
+        url.searchParams.delete('subTab');
+      } else {
+        url.searchParams.set('subTab', activeSubTab);
+        url.searchParams.delete('stakeholder');
+        url.searchParams.delete('tab');
+      }
+      window.history.replaceState({ subTab: activeSubTab }, '', url.toString());
+    } catch (err) {
+      console.warn('URL sync error:', err);
+    }
+  }, [activeSubTab]);
+
+  // Handle browser back and forward button navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlSubTab = searchParams.get('subTab');
+        const stakeholder = searchParams.get('stakeholder');
+        const tab = searchParams.get('tab') || 'DIRECTORY';
+
+        if (urlSubTab) {
+          setActiveSubTab(urlSubTab);
+        } else if (stakeholder) {
+          const sKey = stakeholder.toUpperCase().startsWith('REQ_')
+            ? stakeholder.toUpperCase()
+            : `REQ_${stakeholder.toUpperCase()}`;
+          setActiveSubTab(`${sKey}:${tab.toUpperCase()}`);
+        } else {
+          setActiveSubTab('OVERVIEW');
+        }
+      } catch (err) {
+        console.warn('PopState parse error:', err);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const [systemHealth, setSystemHealth] = useState<string>('OPERATIONAL');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -92,7 +182,7 @@ export function App() {
     localStorage.setItem('auth_user_session', JSON.stringify(authUser));
 
     // Set default sub-tab based on role
-    if (authUser.role === UserRole.SUPER_ADMIN || authUser.role === UserRole.ADMIN) setActiveSubTab('OVERVIEW');
+    if (authUser.role === UserRole.SUPPORT_ADMIN || authUser.role === UserRole.SUPER_ADMIN || (authUser.role as any) === 'SUPER_ADMIN' || authUser.role === UserRole.ADMIN) setActiveSubTab('OVERVIEW');
     else if (authUser.role === 'CONNECT_APP') setActiveSubTab('CHAT');
     else if (authUser.role === UserRole.QUERIES_TL) setActiveSubTab('OVERVIEW');
     else if (authUser.role === UserRole.KYC_TL) setActiveSubTab('OVERVIEW');
@@ -143,11 +233,11 @@ export function App() {
           <TrackingDetailsView onSelectSubTab={setActiveSubTab} />
         ) : (
           <>
-            {(user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN || (user.role as string) === 'SUPER_ADMIN' || (user.role as string) === 'ADMIN') && (
+            {(user.role === UserRole.SUPPORT_ADMIN || user.role === UserRole.SUPER_ADMIN || (user.role as any) === 'SUPER_ADMIN' || user.role === UserRole.ADMIN || (user.role as string) === 'SUPER_ADMIN' || (user.role as string) === 'ADMIN') && (
               isDedicatedAIWorkforceTab ? (
                 <AIAgentDashboard activeSubTab={activeSubTab} onSelectSubTab={setActiveSubTab} />
               ) : (
-                <SuperAdminDashboard activeSubTab={activeSubTab} />
+                <SuperAdminDashboard activeSubTab={activeSubTab} onSelectSubTab={setActiveSubTab} />
               )
             )}
             {(user.role === UserRole.QUERIES_TL || (user.role as string) === 'QUERIES_TL') && <DepartmentTLDashboards role={UserRole.QUERIES_TL} activeSubTab={activeSubTab} onSelectSubTab={setActiveSubTab} />}

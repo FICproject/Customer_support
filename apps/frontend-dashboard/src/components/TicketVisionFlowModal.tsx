@@ -47,7 +47,7 @@ export interface TicketVisionFlowData {
   updatedAt?: string;
   // Custom Flow Overrides if any
   currentStageNumber?: number;
-  escalationType?: 'NONE' | 'TL_TAKEOVER' | 'TL_TO_HUMAN_OFFICER' | 'SUPER_ADMIN_TAKEOVER' | 'OFFICER_OVERRIDE';
+  escalationType?: 'NONE' | 'TL_TAKEOVER' | 'TL_TO_HUMAN_OFFICER' | 'SUPPORT_ADMIN_TAKEOVER' | 'SUPER_ADMIN_TAKEOVER' | 'OFFICER_OVERRIDE';
   takeoverActor?: string;
   takeoverTimestamp?: string;
   customNotes?: string;
@@ -59,7 +59,7 @@ export interface FlowStepDetail {
   title: string;
   subtitle: string;
   actor: string;
-  actorType: 'AI' | 'TL' | 'HUMAN_OFFICER' | 'SUPER_ADMIN' | 'SYSTEM' | 'GATEWAY';
+  actorType: 'AI' | 'TL' | 'HUMAN_OFFICER' | 'SUPPORT_ADMIN' | 'SUPER_ADMIN' | 'SYSTEM' | 'GATEWAY';
   status: 'COMPLETED' | 'IN_PROGRESS' | 'PENDING' | 'ESCALATED' | 'TAKEOVER';
   timestamp: string;
   description: string;

@@ -27,8 +27,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, theme, onToggleTh
   const demoAccounts: DemoAccount[] = [
     {
       role: UserRole.SUPER_ADMIN,
-      title: 'Super Admin',
-      email: 'superadmin@enterprise.ai',
+      title: 'Support Admin',
+      email: 'supportadmin@enterprise.ai',
       icon: Shield,
       color: 'var(--text-brand)',
       desc: 'Global AI Workforce Control & Executive Reports'

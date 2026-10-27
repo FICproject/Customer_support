@@ -73,7 +73,7 @@ function createWindow() {
     {
       label: 'AI Operating System',
       submenu: [
-        { label: 'Super Admin Dashboard', click: () => mainWindow?.loadURL('http://localhost:3000') },
+        { label: 'Support Admin Dashboard', click: () => mainWindow?.loadURL('http://localhost:3000') },
         { label: 'Admin Dashboard', click: () => mainWindow?.loadURL('http://localhost:3000') },
         { type: 'separator' },
         { label: 'Quit Application', role: 'quit' }

@@ -31,12 +31,12 @@ router.put('/:id/queue-config', (req, res) => {
 
     // Audit log
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       agentType: AIAgentType.MONITORING,
       action: 'DEPT_QUEUE_CONFIG_UPDATED',
       inputPayload: { id, queueStrategy, maxQueueCapacity },
       outputResult: dept,
-      decisionReasoning: 'Super admin manually adjusted department queue configurations.',
+      decisionReasoning: 'Support admin manually adjusted department queue configurations.',
       validationPassed: true
     });
 
@@ -64,12 +64,12 @@ router.put('/:id/sla-config', (req, res) => {
 
     // Audit log
     AuditService.logAction({
-      actor: 'SUPER_ADMIN',
+      actor: 'SUPPORT_ADMIN',
       agentType: AIAgentType.MONITORING,
       action: 'DEPT_SLA_CONFIG_UPDATED',
       inputPayload: { id, firstResponseSLA, resolutionSLA, warningThresholdPercent, autoEscalateOnBreach },
       outputResult: dept,
-      decisionReasoning: 'Super admin manually adjusted department SLA configurations.',
+      decisionReasoning: 'Support admin manually adjusted department SLA configurations.',
       validationPassed: true
     });
 
